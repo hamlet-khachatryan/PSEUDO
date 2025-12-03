@@ -1,0 +1,35 @@
+ready_set {
+  input {
+    pdb_file_name = None
+    cif_file_name = None
+    cif_dir_name = None
+    ligand_cache_directory = None
+    output_dir = None
+    output_file_name = None
+  }
+  actions {
+    hydrogens = False
+    histidine_nitrogen_protonation = False
+    neutron_option = *all_h all_d hd_and_h hd_and_d all_hd
+    add_h_to_water = False
+    add_d_to_water = False
+    neutron_exchange_hydrogens = False
+    perdeuterate = False
+    ligands = False
+    optimise_ligand_geometry = False
+    trust_residue_code_is_chemical_components_code = False
+    metals = False
+    remove_waters = True
+    link_to_edits = False
+    optimise_final_geometry_of_hydrogens = False
+    }
+  metal_coordination {
+    use_default_bondlengths = True
+    bond_cutoff = None
+    output_angles = False
+  }
+  run_options {
+    random_seed = 03056941001
+    run_within_refine = False
+  }
+}

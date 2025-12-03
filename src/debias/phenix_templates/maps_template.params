@@ -1,0 +1,305 @@
+  input {
+    xray_data {
+      file_name = None
+      labels = None
+      high_resolution = None
+      low_resolution = None
+      twin_law = None
+      outliers_rejection = False
+      french_wilson_scale = True
+      french_wilson {
+        max_bins = 60
+        min_bin_size = 40
+      }
+      sigma_fobs_rejection_criterion = None
+      sigma_iobs_rejection_criterion = None
+      ignore_all_zeros = True
+      force_anomalous_flag_to_be_equal_to = None
+      convert_to_non_anomalous_if_ratio_pairs_lone_less_than_threshold = 0.5
+      r_free_flags {
+        file_name = None
+        label = None
+        required = True
+        test_flag_value = None
+        ignore_r_free_flags = False
+        disable_suitability_test = False
+        ignore_pdb_hexdigest = False
+        generate = False
+        fraction = 0.1
+        max_free = 2000
+        lattice_symmetry_max_delta = 5
+        use_lattice_symmetry = True
+        use_dataman_shells = False
+        n_shells = 20
+      }
+    }
+    experimental_phases {
+      file_name = None
+      labels = None
+    }
+    pdb {
+      file_name = None
+    }
+    monomers {
+      file_name = None
+    }
+    maps {
+      map_file_name = None
+      d_min = None
+      map_coefficients_file_name = None
+      map_coefficients_label = None
+    }
+    sequence = None
+    scattering_table = wk1995 it1992 *n_gaussian neutron electron
+    wavelength = None
+    energy = None
+    use_experimental_phases = Auto
+    twin_law = Auto
+  }
+  output {
+    file_name = None
+    debug = False
+    directory = None
+    job_title = None
+  }
+  omit_map {
+    map_type = None
+    omit_type = anneal
+    fraction_omit = 1.0
+    resolution_factor = 0.25
+    fill_missing_f_obs = False
+    exclude_free_r_reflections = True
+    boxing {
+      selection = None
+      single = True
+      box_cushion_radius = 20
+      exclude_bulk_solvent = True
+      optimize_binning = False
+      refinement {
+        annealing_type = *cartesian
+        annealing_temperature = Auto
+        ncs = Auto
+        harmonic_restraints = True
+        harmonic_restraints_sigma = 0.1
+        vary_random_seed = False
+        automatic_linking = False
+        refine {
+                strategy = *individual_sites individual_sites_real_space rigid_body \
+                           *individual_adp group_adp tls occupancies group_anomalous den
+                sites {
+                  individual = None
+                  torsion_angles = None
+                  rigid_body = None
+                }
+                adp {
+                  individual {
+                    isotropic = None
+                    anisotropic = None
+                  }
+                  group_adp_refinement_mode = *one_adp_group_per_residue \
+                                              two_adp_groups_per_residue group_selection
+                  group = None
+                  tls = None
+                }
+                occupancies {
+                  individual = None
+                  remove_selection = None
+                  constrained_group {
+                    selection = None
+                  }
+                }
+                anomalous_scatterers {
+                  group {
+                    selection = None
+                    f_prime = 0
+                    f_double_prime = 0
+                    refine = *f_prime *f_double_prime
+                  }
+                }
+        }
+        main {
+            show_process_info = False
+            stop_for_unknowns = True
+            bulk_solvent_and_scale = False
+            apply_overall_isotropic_scale_to_adp = False
+            flip_peptides = False
+            nqh_flips = True
+            simulated_annealing = True
+            simulated_annealing_torsion = False
+            ordered_solvent = False
+            real_space_refinement = local
+            rotamer_restraints = False
+            place_ions = None
+            backbone_sample = False
+            ias = False
+            number_of_macro_cycles = 3
+            max_number_of_iterations = 25
+            use_form_factor_weights = False
+            tan_u_iso = False
+            use_geometry_restraints = True
+            use_convergence_test = False
+            target = *auto ml mlhl ml_sad ls mli
+            min_number_of_test_set_reflections_for_max_likelihood_target = 50
+            max_number_of_resolution_bins = 30
+            use_experimental_phases = False
+            random_seed = 2679941
+            scattering_table = wk1995 it1992 *n_gaussian electron neutron
+            wavelength = None
+            use_normalized_geometry_target = True
+            target_weights_only = False
+            use_f_model_scaled = False
+            max_d_min = 0.25
+            fake_f_obs = False
+            optimize_mask = False
+            occupancy_max = 1
+            occupancy_min = 0
+            stir = None
+            show_residual_map_peaks_and_holes = False
+            fft_vs_direct = False
+            switch_to_isotropic_high_res_limit = 1.5
+            find_and_add_hydrogens = False
+            correct_special_position_tolerance = 1
+            nproc = 1
+            update_f_part1 = True
+            tncs_correction = False
+            ddr {
+              enable = False
+              bond_weighting = True
+              angle_weighting = True
+              trans_peptide = True
+            }
+        }
+        bulk_solvent_and_scale {
+            mode = slow *fast
+            apply_back_trace = False
+            bulk_solvent = False
+            anisotropic_scaling = False
+            k_sol_b_sol_grid_search = False
+            minimization_k_sol_b_sol = False
+            minimization_b_cart = False
+            target = ls_wunit_k1 *ml
+            symmetry_constraints_on_b_cart = False
+            k_sol_max = 0.6
+            k_sol_min = 0
+            b_sol_max = 300
+            b_sol_min = 0
+            k_sol_grid_search_max = 0.6
+            k_sol_grid_search_min = 0
+            b_sol_grid_search_max = 80
+            b_sol_grid_search_min = 20
+            k_sol_step = 0.2
+            b_sol_step = 20
+            number_of_macro_cycles = 1
+            max_iterations = 25
+            min_iterations = 25
+            fix_k_sol = None
+            fix_b_sol = None
+            fix_b_cart {
+              b11 = None
+              b22 = None
+              b33 = None
+              b12 = None
+              b13 = None
+              b23 = None
+            }
+        }
+        statistical_model_for_missing_atoms {
+            solvent_content = 0
+            map_type = *2mFo-DFc
+            resolution_factor = 0.25
+            probability_mask = False
+            diff_map_cutoff = 1.5
+            output_all_masks = False
+            use_dm_map = False
+        }
+        hydrogens {
+            refine = False
+            force_riding_adp = None
+            optimize_scattering_contribution = False
+            contribute_to_f_calc = False
+            high_resolution_limit_to_include_scattering_from_h = 1.6
+            real_space_optimize_x_h_orientation = False
+            xh_bond_distance_deviation_limit = 0
+            build {
+              map_type = "mFobs-DFmodel"
+              map_cutoff = 2
+              secondary_map_type = "2mFobs-DFmodel"
+              secondary_map_cutoff = 1.4
+              angular_step = 3
+              dod_and_od = False
+              filter_dod = False
+              min_od_dist = 0.6
+              max_od_dist = 1.35
+              min_dod_angle = 85
+              max_dod_angle = 170
+              h_bond_min_mac = 1.8
+              h_bond_max = 3.9
+              use_sigma_scaled_maps = True
+              grid_step = 0.6
+              map_next_to_model {
+                min_model_peak_dist = 0.7
+                max_model_peak_dist = 1.05
+                min_peak_peak_dist = 0.7
+                use_hydrogens = False
+              }
+              max_number_of_peaks = None
+              peak_search {
+                peak_search_level = 1
+                max_peaks = 0
+                interpolate = True
+                min_distance_sym_equiv = None
+                general_positions_only = True
+                min_cross_distance = 1
+                min_cubicle_edge = 5
+              }
+            }
+            local_real_space_fit_angular_step = 0.5
+        }
+        den {
+            reference_file = None
+            gamma = 0.5
+            kappa = 0.1
+            weight = 30
+            sigma = 0.44
+            optimize = True
+            opt_gamma_values = 0 0.2 0.4 0.6 0.8 1
+            opt_weight_values = 3 10 30 100 300
+            num_cycles = 10
+            kappa_burn_in_cycles = 2
+            bulk_solvent_and_scale = False
+            refine_adp = True
+            final_refinement_cycle = False
+            verbose = False
+            annealing_type = *cartesian
+            minimize_c_alpha_only = False
+            output_kinemage = False
+            restraint_network {
+              lower_distance_cutoff = 3
+              upper_distance_cutoff = 15
+              sequence_separation_low = 0
+              sequence_separation_limit = 10
+              exclude_hydrogens = True
+              ndistance_ratio = 1
+              export_den_pairs = False
+              den_network_file = None
+            }
+        }
+
+      }
+      debugging {
+        flatten_background = False
+        control_map = False
+      }
+    }
+    simple {
+      n_debias_cycles = 2
+      neutral_volume_box_cushion_width = 1
+      full_resolution_map = True
+    }
+    map_types = None
+  }
+  parallel {
+    nproc = 1
+    technology = multiprocessing
+    qsub_command = None
+  }

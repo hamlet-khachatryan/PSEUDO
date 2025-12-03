@@ -1,0 +1,24 @@
+defaults:
+  - _self_
+
+slurm:
+  job_name: "debias_job"
+  partition:  "cs05r"
+  cpus_per_task: 1
+  mem_per_cpu: 1024
+  time: "08:00:00"
+  num_nodes: 2
+
+paths:
+  work_dir: null
+
+debias:
+  run_name: "debias_job"
+  omit_type: "amino_acids"
+  omit_fraction: 0.1
+  iterations: 5
+  always_omit: null
+  seed: null
+  structure_path: null
+  reflections_path: null
+  screening_path: null
