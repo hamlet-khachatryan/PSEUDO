@@ -27,11 +27,12 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
-dependencies = [
-]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
 
 [project.optional-dependencies]
-
 dev = [
     "pytest",
     "mkdocs",
@@ -43,7 +44,6 @@ cli = [
 ]
 
 [project.scripts]
-
 run-debias = "cli.run_debias:main"
 run-analysis = "cli.run_analysis:main"
 
