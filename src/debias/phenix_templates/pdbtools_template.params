@@ -1,0 +1,71 @@
+modify {
+  remove = 'water or element H or element D or hetero'
+  keep = None
+  put_into_box_with_buffer = None
+  selection = None
+  flip_symmetric_amino_acids = False
+  adp {
+    atom_selection = None
+    randomize = False
+    set_b_iso = None
+    convert_to_isotropic = False
+    convert_to_anisotropic = False
+    shift_b_iso = None
+    scale_adp = None
+  }
+  sites {
+    atom_selection = None
+    shake = None
+    switch_rotamers = max_distant min_distant exact_match fix_outliers
+    translate = 0 0 0
+    rotate = 0 0 0
+    euler_angle_convention = *xyz zyz
+  }
+  occupancies {
+    atom_selection = None
+    randomize = False
+    set = None
+  }
+  rotate_about_axis {
+    axis = None
+    angle = None
+    atom_selection = None
+  }
+  change_of_basis = None
+  renumber_residues = False
+  increment_resseq = None
+  truncate_to_polyala = False
+  truncate_to_polygly = False
+  remove_alt_confs = False
+  always_keep_one_conformer = False
+  set_chemical_element_simple_if_necessary = None
+  set_seg_id_to_chain_id = False
+  clear_seg_id = False
+  convert_semet_to_met = False
+  convert_met_to_semet = False
+  rename_chain_id {
+    old_id = None
+    new_id = None
+  }
+  set_charge {
+    charge_selection = None
+    charge = None
+  }
+  neutralize_scatterers = False
+  remove_fraction = None
+  random_seed = None
+  move_waters_last = False
+}
+output {
+  prefix = None
+  suffix = _no_waters
+  serial = None
+  overwrite = None
+  filename = None
+  file_name = None
+  serial_format = "%03d"
+}
+job_title = None
+gui {
+  output_dir = None
+}
