@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 from pathlib import Path
-from typing import List, Literal, overload, Union, Optional, Sequence, Iterator
+from typing import List, Literal, overload, Union, Optional, Sequence, Iterator, Any
 
 import gemmi
 import numpy as np
@@ -51,29 +51,30 @@ def extract_ids(
     for model in structure:
         for chain in model:
             for residue in chain:
-                if mode == "amino_acids":
-                    tid: AminoID = (chain.name, residue.seqid.num, residue.name)
-                    if tid not in seen:
-                        seen.add(tid)
-                        out.append(tid)
-
-                elif mode == "atoms":
-                    for atom in residue:
-                        tid: AtomID = (
-                            chain.name,
-                            residue.seqid.num,
-                            residue.name,
-                            atom.name,
-                            str(atom.altloc),
-                        )
+                if residue.het_flag == "A":
+                    if mode == "amino_acids":
+                        tid: AminoID = (chain.name, residue.seqid.num, residue.name)
                         if tid not in seen:
                             seen.add(tid)
                             out.append(tid)
 
-                else:
-                    raise ValueError(
-                        f"Invalid mode: {mode}. Must be 'atoms' or 'amino_acids'."
-                    )
+                    elif mode == "atoms":
+                        for atom in residue:
+                            tid: AtomID = (
+                                chain.name,
+                                residue.seqid.num,
+                                residue.name,
+                                atom.name,
+                                str(atom.altloc),
+                            )
+                            if tid not in seen:
+                                seen.add(tid)
+                                out.append(tid)
+
+                    else:
+                        raise ValueError(
+                            f"Invalid mode: {mode}. Must be 'atoms' or 'amino_acids'."
+                        )
     return out
 
 
@@ -203,7 +204,7 @@ def sample_ids(
             for i in range(0, remaining_n, omit_size):
                 omitted_chunk = permuted[i : i + omit_size]
                 omitted_set = set(omitted_chunk)
-                # complement: preserve original 'remaining' order for consistency
+
                 complement = [x for x in remaining if x not in omitted_set]
                 yield list(always_omit_in) + complement
 
@@ -237,7 +238,7 @@ def stochastic_omission_sampler(
     n_iterations: Optional[int] = 5,
     always_omit: Optional[Sequence["AnyID"]] = None,
     seed: Optional[int] = None,
-) -> List[List["AnyID"]]:
+) -> list[Any]:
     """
     Wrapper that computes a reasonable default `n_iterations` (target ~50 maps)
     and collects results from `sample_ids` into a flattened list.
@@ -267,4 +268,5 @@ def stochastic_omission_sampler(
         always_omit=always_omit,
         seed=seed,
     )
+
     return list(sampler_generator)

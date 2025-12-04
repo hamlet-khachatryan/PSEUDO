@@ -1,10 +1,15 @@
 from pathlib import Path
 from typing import List, Tuple, Sequence
+import itertools
 
-from src.debias.phenix_param_parser import ParameterFile
-from src.debias.omission_sampler import stochastic_omission_sampler
-from src.debias.config import DebiasConfig
-from src.debias.omission_table import build_omission_matrix
+from debias.phenix_param_parser import ParameterFile
+from debias.omission_sampler import stochastic_omission_sampler
+from debias.config import DebiasConfig
+from debias.omission_table import (
+    build_omission_matrix,
+    omission_sparse_map,
+    save_omission_json,
+)
 
 PARAM_TEMPLATES = Path(__file__).parent / "phenix_templates"
 
@@ -23,10 +28,13 @@ def generate_parameter_files(
     """
     stem = crystal[0]
 
-    pdb_params = ParameterFile(PARAM_TEMPLATES / "pdbtools_template.params")
+    pdb_params = ParameterFile()
+    pdb_params.load_from_path(str(PARAM_TEMPLATES / "pdbtools_template.params"))
     pdb_params.set("output.prefix", str(dirs["processed"] / stem))
     pdb_params.save(str(dirs["processed"] / "pdbtools.params"))
 
+    param_ready = ParameterFile()
+    param_ready.load_from_path(str(PARAM_TEMPLATES / "ready_set_template.params"))
     param_ready = ParameterFile(PARAM_TEMPLATES / "ready_set_template.params")
 
     pdb_no_waters = dirs["processed"] / f"{stem}_no_waters.pdb"
@@ -45,8 +53,6 @@ def generate_parameter_files(
     param_ready.save(str(dirs["processed"] / "ready_set.params"))
 
     generated_files = []
-    maps_template = PARAM_TEMPLATES / "maps_template.params"
-
     selections = stochastic_omission_sampler(
         structure_path=crystal[1],
         omit_type=cfg.debias.omit_type,
@@ -56,7 +62,12 @@ def generate_parameter_files(
         seed=cfg.debias.seed,
     )
 
-    omission_map, id_strings = build_omission_matrix(crystal[3], selections)
+    flattened = set(list(itertools.chain.from_iterable(selections)))
+    sorted_ids = sorted(list(flattened), key=lambda x: x[1])
+
+    id_strings, mat = build_omission_matrix(sorted_ids, selections)
+    sparse_map = omission_sparse_map(id_strings, mat)
+    save_omission_json(dirs["metadata"] / f"{stem}_omission_map.json", sparse_map)
 
     for i, selection in enumerate(selections):
         run_id = f"{stem}_{i}"
@@ -64,7 +75,8 @@ def generate_parameter_files(
         job_result_dir = dirs["results"] / run_id
         job_result_dir.mkdir(parents=True, exist_ok=True)
 
-        param_file = ParameterFile(file_path=maps_template)
+        param_file = ParameterFile()
+        param_file.load_from_path(str(PARAM_TEMPLATES / "maps_template.params"))
 
         param_file.set(
             "input.pdb.file_name", str(dirs["processed"] / f"{stem}_updated.pdb")

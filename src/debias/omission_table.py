@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Sequence, Tuple, Dict
 import numpy as np
-import csv
+import json
 
-from src.debias.omission_sampler import AnyID
+from debias.omission_sampler import AnyID
 
 
 def _id_to_str(item: AnyID) -> str:
@@ -55,7 +55,9 @@ def build_omission_matrix(
     return id_strings, mat
 
 
-def omission_sparse_map(id_strings: Sequence[str], matrix: np.ndarray) -> Dict[str, List[int]]:
+def omission_sparse_map(
+    id_strings: Sequence[str], matrix: np.ndarray
+) -> Dict[str, List[int]]:
     """
     Convert omission matrix to a sparse mapping id -> list of sample indices.
 
@@ -83,27 +85,19 @@ def omission_sparse_map(id_strings: Sequence[str], matrix: np.ndarray) -> Dict[s
         out.setdefault(sid, [])
     return out
 
-def save_omission_csv(
-    out_path: Path | str, id_strings: Sequence[str], matrix: np.ndarray, sample_prefix: str = "sample_"
+
+def save_omission_json(
+    out_path: Path | str,
+    sparse_map: Dict[str, List[int]],
 ) -> None:
     """
-    Save omission matrix as CSV: first column 'id', then one column per sample (0/1).
+    Save the sparse omission map to a JSON file.
 
     Args:
-        out_path: Path where to write CSV. Uses pathlib.Path.
-        id_strings: list of id strings (row order).
-        matrix: boolean matrix (n_items, n_samples).
-        sample_prefix: prefix for sample columns.
+        out_path: Path where to write JSON.
+        sparse_map: Dictionary mapping id -> list of sample indices.
     """
     outp = Path(out_path)
     outp.parent.mkdir(parents=True, exist_ok=True)
-    n_items, n_samples = matrix.shape
-
-    header = ["id"] + [f"{sample_prefix}{i}" for i in range(n_samples)]
-
-    with outp.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
-        writer.writerow(header)
-        for i, sid in enumerate(id_strings):
-            row = [sid] + [int(matrix[i, j]) for j in range(n_samples)]
-            writer.writerow(row)
+    with outp.open("w", encoding="utf-8") as f:
+        json.dump(sparse_map, f, indent=2)

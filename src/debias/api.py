@@ -3,15 +3,15 @@ from pathlib import Path
 from typing import Optional, List, Union, Any
 
 import click
-from hydra import compose, initialize
+from hydra import compose, initialize_config_module
 from hydra.core.global_hydra import GlobalHydra
 from omegaconf import OmegaConf
 import sqlite3
 import pandas as pd
 
-from src.debias.config import DebiasConfig
-from src.debias.parameter_generator import generate_parameter_files
-from src.common.slurm import (
+from debias.config import DebiasConfig
+from debias.parameter_generator import generate_parameter_files
+from common.slurm import (
     generate_preprocessing_sbatch_content,
     generate_omission_sbatch_content,
 )
@@ -37,13 +37,11 @@ def load_debias_config(
     """
     GlobalHydra.instance().clear()
 
-    with initialize(
+    with initialize_config_module(
         version_base=None,
-        config_path=str(os.path.relpath(CONF_PATH, Path(__file__).parent)),
+        config_module="src.conf",
     ):
-        base_cfg = compose(config_name="config")
-
-    cfg = base_cfg
+        cfg = compose(config_name="config.yaml", overrides=overrides)
 
     if config_path:
         print(f"Loading Provided config: {config_path}")

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.debias.config import DebiasConfig
+from debias.config import DebiasConfig
 
 SBATCH_HEADER = """#!/bin/bash
 #SBATCH --job-name={job_name}

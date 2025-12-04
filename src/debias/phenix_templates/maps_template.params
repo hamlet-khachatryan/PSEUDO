@@ -84,8 +84,7 @@
         vary_random_seed = False
         automatic_linking = False
         refine {
-                strategy = *individual_sites individual_sites_real_space rigid_body \
-                           *individual_adp group_adp tls occupancies group_anomalous den
+                strategy = *individual_sites individual_sites_real_space rigid_body *individual_adp group_adp tls occupancies group_anomalous den
                 sites {
                   individual = None
                   torsion_angles = None
@@ -96,8 +95,7 @@
                     isotropic = None
                     anisotropic = None
                   }
-                  group_adp_refinement_mode = *one_adp_group_per_residue \
-                                              two_adp_groups_per_residue group_selection
+                  group_adp_refinement_mode = *one_adp_group_per_residue two_adp_groups_per_residue group_selection
                   group = None
                   tls = None
                 }

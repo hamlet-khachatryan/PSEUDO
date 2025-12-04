@@ -1,5 +1,5 @@
 import click
-from src.debias.cli import debias_cli
+from debias.cli import debias_cli
 # from src.analysis.cli import analysis_cli
 
 

@@ -160,7 +160,7 @@ class ParameterFile:
     Impure wrapper to read/write phenix parameter files.
     """
 
-    file_path: Optional[Path] = None
+    file_path: Path | str = None
     params: Dict[str, Any] = field(default_factory=dict)
 
     def load_from_path(self, path: Path | str) -> None:

@@ -1,5 +1,5 @@
 import click
-from src.debias.api import generate_slurm_job, load_debias_config
+from debias.api import generate_slurm_job, load_debias_config
 
 
 @click.group(name="debias")

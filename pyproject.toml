@@ -19,7 +19,7 @@ maintainers = [
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.9"
-license = "Mozilla Public License Version 2.0"
+license = {file = "LICENSE"}
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3.9",
@@ -44,16 +44,15 @@ cli = [
 ]
 
 [project.scripts]
-run-debias = "cli.run_debias:main"
-run-analysis = "cli.run_analysis:main"
+run-debias = "debias.cli:debias_cli"
 
 [tool.setuptools.packages.find]
-
 where = ["src"]
 
 [tool.setuptools.package-data]
 
-debias = ["phenix_templates/*.params", "config/*.json",  "config/*.yaml"]
+debias = ["phenix_templates/*.params"]
+conf = [ "conf/*.json",  "conf/*.yaml"]
 tests = ["test_data/*.pdb", "test_data/*.mtz"]
 
 [tool.ruff]

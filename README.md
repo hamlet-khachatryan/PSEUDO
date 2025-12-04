@@ -7,6 +7,31 @@ PSEUDO is a computational framework for debiasing and uncertainty quantification
 ### Overview
 The Debias module supports flexible configuration for both interactive (Jupyter) and batch (CLI) workflows. It utilizes a strict configuration precedence system to ensure reproducibility while allowing for quick experimental overrides.
 
+## Installation
+
+Prerequisites:
+- Python >= 3.9
+- `pip`
+
+To install the package locally, run the following command in the project root:
+
+```bash
+pip install .
+```
+
+For development installation (editable mode with dev dependencies):
+
+```bash
+pip install -e ".[dev]"
+```
+
+### CLI Usage
+
+After installation, the following commands are available:
+
+```bash
+run-debias --help
+```
 #### Configuration Precedence
 Values are applied in the following order (highest priority first):
 1. **CLI Flags / Manual Overrides** (Highest Priority)
