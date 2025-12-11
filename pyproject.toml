@@ -52,7 +52,7 @@ where = ["src"]
 [tool.setuptools.package-data]
 
 debias = ["phenix_templates/*.params"]
-conf = [ "conf/*.json",  "conf/*.yaml"]
+conf = [ "*.json",  "*.yaml"]
 tests = ["test_data/*.pdb", "test_data/*.mtz"]
 
 [tool.ruff]
