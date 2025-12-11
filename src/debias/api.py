@@ -41,7 +41,7 @@ def load_debias_config(
         version_base=None,
         config_module="conf",
     ):
-        cfg = compose(config_name=str(CONF_PATH / "config.yaml"), overrides=overrides)
+        cfg = compose(config_name="config", overrides=overrides)
 
     if config_path:
         print(f"Loading Provided config: {config_path}")
