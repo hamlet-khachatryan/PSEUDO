@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List, Tuple, Sequence
+from typing import List, Tuple
 import itertools
 
 from debias.phenix_param_parser import ParameterFile
@@ -61,7 +63,6 @@ def generate_parameter_files(
         always_omit=cfg.debias.always_omit,
         seed=cfg.debias.seed,
     )
-
     flattened = set(list(itertools.chain.from_iterable(selections)))
     sorted_ids = sorted(list(flattened), key=lambda x: x[1])
 
@@ -85,9 +86,7 @@ def generate_parameter_files(
         param_file.set("output.file_name", str(job_result_dir / f"{run_id}.mtz"))
         param_file.set("output.job_title", run_id)
 
-        formatted_sel = _format_selection(
-            selection, cfg.debias.omit_type, cfg.debias.always_omit
-        )
+        formatted_sel = _format_selection(selection, cfg.debias.omit_type)
         param_file.set("omit_map.boxing.selection", formatted_sel)
 
         out_path = dirs["params"] / f"{run_id}.params"
@@ -97,13 +96,10 @@ def generate_parameter_files(
     return generated_files
 
 
-def _format_selection(
-    selection_data: List[Tuple], omit_type: str, always_omit: Sequence[str]
-) -> str:
+def _format_selection(selection_data: List[Tuple], omit_type: str) -> str:
     """Helper to format the selection list into a Phenix string."""
     formatted = []
-    if always_omit is not None:
-        formatted.append(" or ".join(always_omit))
+
     if omit_type == "residues":
         for sel in selection_data:
             formatted.append(f"(chain {sel[0]} and resid {sel[1]})")

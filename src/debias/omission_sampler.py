@@ -84,13 +84,19 @@ def _order_preserving_dedupe(items: Sequence[object]) -> List[object]:
 
 
 def _apply_always_omit_selectors(
-    all_ids: Sequence["AnyID"], always_omit: Optional[Sequence["AnyID"]]
+    all_ids: Sequence["AnyID"], always_omit: Optional[str] = None
 ):
     """Return (selectors_in_structure, remaining_pool) preserving order of remaining_pool."""
     if not always_omit:
         return [], list(all_ids)
-    sel_set = set(always_omit)
-    selectors_in = [s for s in always_omit if s in all_ids]
+
+    always_omit_formated = [
+        tuple([int(p) if i == 1 else p for i, p in enumerate(s.strip().split())])
+        for s in always_omit.split(",")
+    ]
+
+    sel_set = set(always_omit_formated)
+    selectors_in = [s for s in always_omit_formated if s in all_ids]
     remaining = [x for x in all_ids if x not in sel_set]
     return selectors_in, remaining
 
@@ -101,7 +107,7 @@ def sample_ids(
     mode: Literal["atoms"],
     fraction: float,
     iterations: int = 1,
-    always_omit: Optional[Sequence["AnyID"]] = None,
+    always_omit: Optional[str] = None,
     seed: Optional[int] = None,
 ) -> Iterator[List["AtomID"]]: ...
 
@@ -112,7 +118,7 @@ def sample_ids(
     mode: Literal["amino_acids"],
     fraction: float,
     iterations: int = 5,
-    always_omit: Optional[Sequence["AnyID"]] = None,
+    always_omit: Optional[str] = None,
     seed: Optional[int] = None,
 ) -> Iterator[List["AminoID"]]: ...
 
@@ -122,7 +128,7 @@ def sample_ids(
     mode: Literal["atoms", "amino_acids"],
     fraction: float,
     iterations: int = 5,
-    always_omit: Optional[Sequence[str]] = None,
+    always_omit: Optional[str] = None,
     seed: Optional[int] = None,
 ) -> Iterator[List[Union["AtomID", "AminoID"]]]:
     """
@@ -139,7 +145,7 @@ def sample_ids(
         mode: "atoms" or "amino_acids".
         fraction: fraction to omit (0.0 < fraction < 1.0).
         iterations: number of independent shuffles/runs (>=1).
-        always_omit: optional sequence of IDs that must always be omitted.
+        always_omit: optional striung of IDs that must always be omitted.
         seed: optional RNG seed for reproducible permutations.
 
     Yields:
@@ -236,7 +242,7 @@ def stochastic_omission_sampler(
     omit_type: Literal["amino_acids", "atoms"] = "amino_acids",
     omit_fraction: float = 0.1,
     n_iterations: Optional[int] = 5,
-    always_omit: Optional[Sequence["AnyID"]] = None,
+    always_omit: Optional[str] = None,
     seed: Optional[int] = None,
 ) -> list[Any]:
     """

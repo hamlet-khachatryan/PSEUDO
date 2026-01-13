@@ -63,14 +63,17 @@ def run_debias_generation(
     run_name: Optional[str] = None,
     structure_path: Optional[Union[str, Path]] = None,
     reflections_path: Optional[Union[str, Path]] = None,
+    screening_path: Optional[Union[str, Path]] = None,
     work_dir: Optional[Union[str, Path]] = None,
     omit_type: Optional[str] = None,
     omit_fraction: Optional[float] = None,
+    always_omit: Optional[str] = None,
     iterations: Optional[int] = None,
     seed: Optional[int] = None,
     slurm_partition: Optional[str] = None,
     slurm_cpus_per_task: Optional[int] = None,
     slurm_mem_per_cpu: Optional[str] = None,
+    slurm_num_nodes: Optional[int] = None,
 ):
     """
     API to generate debias SLURM jobs with explicit parameters.
@@ -84,6 +87,8 @@ def run_debias_generation(
         overrides.append(f"debias.structure_path={structure_path}")
     if reflections_path:
         overrides.append(f"debias.reflections_path={reflections_path}")
+    if screening_path:
+        overrides.append(f"debias.screening_path={screening_path}")
     if work_dir:
         overrides.append(f"paths.work_dir={work_dir}")
 
@@ -93,6 +98,8 @@ def run_debias_generation(
         overrides.append(f"debias.omit_fraction={omit_fraction}")
     if iterations is not None:
         overrides.append(f"debias.iterations={iterations}")
+    if always_omit:
+        overrides.append(f"debias.always_omit={always_omit}")
     if seed is not None:
         overrides.append(f"debias.seed={seed}")
 
@@ -103,6 +110,8 @@ def run_debias_generation(
         overrides.append(f"slurm.cpus_per_task={slurm_cpus_per_task}")
     if slurm_mem_per_cpu:
         overrides.append(f"slurm.mem_per_cpu={slurm_mem_per_cpu}")
+    if slurm_num_nodes:
+        overrides.append(f"slurm.num_nodes={slurm_num_nodes}")
 
     cfg = load_debias_config(config_path=config_path, overrides=overrides)
     generate_slurm_job(cfg)

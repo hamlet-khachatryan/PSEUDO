@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional
+
 from pathlib import Path
 
 from omegaconf import OmegaConf
@@ -9,7 +10,7 @@ from omegaconf import OmegaConf
 class SlurmResources:
     job_name: str = "debias_job"
     partition: str = "cs05r"
-    time: str = "04:00:00"
+    time: str = "10-00:00:00"
     mem_per_cpu: str = "1024"
     cpus_per_task: int = 1
     num_nodes: int = 3
@@ -28,7 +29,7 @@ class DebiasParams:
     omit_type: Literal["amino_acids", "atoms"] = "amino_acids"
     omit_fraction: float = 0.1
     iterations: int = 5
-    always_omit: Optional[Sequence[str]] = None
+    always_omit: Optional[str] = None
     seed: Optional[int] = None
     structure_path: Optional[str] = None
     reflections_path: Optional[str] = None

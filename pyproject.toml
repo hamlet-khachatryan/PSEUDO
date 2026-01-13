@@ -44,7 +44,7 @@ cli = [
 ]
 
 [project.scripts]
-run-debias = "debias.cli:debias_cli"
+pseudo_debias = "debias.cli:debias_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]

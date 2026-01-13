@@ -29,7 +29,10 @@ REFLECTION_PATH=$(echo $TASK_INFO | cut -d'|' -f3)
 OUTPUT_PATH="{base_dir}/$CRYSTAL_ID"
 PROCESSED_PATH="$OUTPUT_PATH/processed"
 mkdir -p "$PROCESSED_PATH"
+
+cp "$MODEL_PATH" "$PROCESSED_PATH/$(basename "$MODEL_PATH" | sed 's/\.[^.]*$/_original&/')"
 cd "$OUTPUT_PATH"
+
 
 phenix.pdbtools "$MODEL_PATH" "$PROCESSED_PATH/pdbtools.params"
 phenix.ready_set "$PROCESSED_PATH/ready_set.params"
