@@ -123,7 +123,7 @@ slurm:
 **Step 2: Execute Python Script**
 
 ```python
-from src.debias.api import load_debias_config, generate_slurm_job
+from debias.api import load_debias_config, generate_slurm_job
 
 # Define paths for the specific target
 pdb_file = "/data/pdb/target_5e5z.pdb"
@@ -144,14 +144,14 @@ generate_slurm_job(cfg)
 Best for reproducible single runs using a predefined parameters.
 
 ```bash
-  pseudo_debias generate-params --config ./configs/config_delta.yaml
+  pseudo-debias generate-params --config ./configs/config_delta.yaml
 ```
 
 ### Example 3: Python Parameter Sweep
 Best for testing multiple omission parameters programmatically.
 
 ```python
-from src.debias.api import load_debias_config, generate_slurm_job
+from debias.api import load_debias_config, generate_slurm_job
 
 target_name = "target_5e5z"
 fractions = [0.05, 0.10, 0.20]
@@ -175,6 +175,6 @@ for frac in fractions:
 Best for quick tests without creating a configuration file.
 
 ```bash
-  pseudo_debias generate-params --run_name "experiment_delta_quick" --structure /data/pdb/target_5e5z.pdb \
+  pseudo-debias generate-params --run_name "experiment_delta_quick" --structure /data/pdb/target_5e5z.pdb \
   --reflections /data/mtz/target_5e5z.mtz --omit_fraction 0.05
 ```
