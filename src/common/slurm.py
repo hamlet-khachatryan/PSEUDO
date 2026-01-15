@@ -7,6 +7,7 @@ SBATCH_HEADER = """#!/bin/bash
 #SBATCH --partition={partition}
 #SBATCH --nodes={num_nodes}
 #SBATCH --cpus-per-task={cpus_per_task}
+#SBATCH --ntasks=1
 #SBATCH --mem-per-cpu={mem_per_cpu}
 #SBATCH --time={time}
 #SBATCH --output=%x_%A_%a.out
