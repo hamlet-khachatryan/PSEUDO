@@ -5,9 +5,9 @@ slurm:
   job_name: "debias_job"
   partition:  "cs05r"
   cpus_per_task: 1
-  mem_per_cpu: 1024
+  mem_per_cpu: 5G
   time: "10-00:00:00"
-  num_nodes: 4
+  num_nodes: 1
 
 paths:
   work_dir: null

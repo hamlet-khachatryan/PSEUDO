@@ -140,6 +140,7 @@ def _setup_debias_directories(
     dirs = {
         "root": base,
         "sbatch": base / "sbatch",
+        "logs": base / "logs",
     }
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)

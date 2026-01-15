@@ -35,14 +35,14 @@ These settings control the structural omission logic and input data mapping.
 #### 2. SLURM Resources (`slurm`)
 Settings for workload management and job submission on HPC clusters.
 
-| Parameter | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
+| Parameter | Type | Default        | Description |
+| :--- | :--- |:---------------| :--- |
 | **`job_name`** | `str` | `"debias_job"` | Name of the job as it appears in the scheduler queue. |
-| **`partition`** | `str` | `"cs05r"` | Cluster partition/queue to submit the job to. |
-| **`time`** | `str` | `"04:00:00"` | Maximum wall time (Format: `HH:MM:SS`). |
-| **`mem_per_cpu`** | `str` | `"1024"` | Memory required per CPU (in MB). |
-| **`cpus_per_task`** | `int` | `1` | Number of CPUs allocated per task. |
-| **`num_nodes`** | `int` | `3` | Number of compute nodes to request. |
+| **`partition`** | `str` | `"cs05r"`      | Cluster partition/queue to submit the job to. |
+| **`time`** | `str` | `"3-00:00:00"` | Maximum wall time (Format: `HH:MM:SS`). |
+| **`mem_per_cpu`** | `str` | `"5G"`         | Memory required per CPU (in MB). |
+| **`cpus_per_task`** | `int` | `1`            | Number of CPUs allocated per task. |
+| **`num_nodes`** | `int` | `1`            | Number of compute nodes to request. |
 
 #### 3. Path Configuration (`paths`)
 System-level directory settings.
@@ -50,6 +50,11 @@ System-level directory settings.
 | Parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | **`work_dir`** | `str` | `CWD` | Base directory for outputs. Defaults to Current Working Directory. |
+
+The `screening_path` parameter enables batch processing by accepting a summary file in either **CSV** or **SQLite** format. For CSV files, the input must contain `PDB` and `MTZ` columns pointing to the respective file paths. When using a SQLite database (Diamond XChem SoakDB), the module automatically queries the `mainTable` to identify valid datasets—filtering for outcomes like 'CompChem ready' or 'Deposited'—and prioritizes the latest refinement files, falling back to Dimple outputs where necessary.
+
+The `always_omit` parameter allows users to define a persistent omission mask that applies to every iteration. This is critical for validating specific ligands or regions of interest by ensuring they are never present in the model during map generation. The value accepts a selection string (e.g., `chain A and resid 10`) which is merged with the stochastic omission mask.
+
 
 ### Output
 When a job is generated (e.g., `run_name: testing`), the module creates a structured workspace. The internal organization is determined by the processing stages: preprocessing, parameter generation, and result collection.
@@ -81,9 +86,9 @@ Assuming `work_dir` is set to `/workspace` and `run_name` is `experiment_01`, th
     │
     └── results/                    # Output directories for each omission cycle
         ├── {stem}_0/
-        │   └── {stem}_0.ccp4        # Perturb map file for cycle 0
+        │   └── {stem}_0.mtz        # Perturb map file for cycle 0
         ├── {stem}_1/
-        │   └── {stem}_1.ccp4
+        │   └── {stem}_1.mtz
         └── ...
 ```
 *Note: `{stem}` refers to the identifier derived from the input structure filename (e.g., `test_model` from `test_model.pdb`).*
@@ -100,7 +105,6 @@ After running `generate_slurm_job(cfg)` in Python or via CLI, the system prints 
   jid=$(sbatch --parsable <path_to>/sbatch/submit_preprocessing.slurm) && \
 sbatch --dependency=afterok:$jid <path_to>/sbatch/submit_omission.slurm
 ```
-
 
 ## Usage Examples
 
