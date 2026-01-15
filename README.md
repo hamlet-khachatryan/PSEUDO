@@ -7,7 +7,7 @@ PSEUDO is a computational framework for debiasing and experimental uncertainty q
 To install the package locally, run the following command in the project root:
 
 ```bash
-  git clone [https://github.com/hamlet-khachatryan/PSEUDO.git](https://github.com/hamlet-khachatryan/PSEUDO.git)
+  git clone https://github.com/hamlet-khachatryan/PSEUDO.git
   cd PSEUDO
   pip install .
 ```
