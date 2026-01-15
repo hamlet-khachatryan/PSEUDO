@@ -57,9 +57,9 @@ def debias_cli():
 def generate_params(
     config,
     run_name,
-    structure,
-    reflections,
-    screening,
+    structure_path,
+    reflections_path,
+    screening_path,
     work_dir,
     omit_type,
     omit_fraction,
@@ -80,12 +80,12 @@ def generate_params(
     if run_name:
         overrides.append(f"debias.run_name={run_name}")
         overrides.append(f"slurm.job_name={run_name}")
-    if structure:
-        overrides.append(f"debias.structure_path={structure}")
-    if reflections:
-        overrides.append(f"debias.reflections_path={reflections}")
-    if screening:
-        overrides.append(f"debias.screening_path={screening}")
+    if structure_path:
+        overrides.append(f"debias.structure_path={structure_path}")
+    if reflections_path:
+        overrides.append(f"debias.reflections_path={reflections_path}")
+    if screening_path:
+        overrides.append(f"debias.screening_path={screening_path}")
     if work_dir:
         overrides.append(f"paths.work_dir={work_dir}")
 
