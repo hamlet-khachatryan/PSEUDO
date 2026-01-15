@@ -100,7 +100,7 @@ def _format_selection(selection_data: List[Tuple], omit_type: str) -> str:
     """Helper to format the selection list into a Phenix string."""
     formatted = []
 
-    if omit_type == "residues":
+    if omit_type == "amino_acids":
         for sel in selection_data:
             formatted.append(f"(chain {sel[0]} and resid {sel[1]})")
     elif omit_type == "atoms":
