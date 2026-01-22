@@ -45,6 +45,7 @@ cli = [
 
 [project.scripts]
 pseudo-debias = "debias.cli:debias_cli"
+pseudo-quantify = "quantify.cli:quantify_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
