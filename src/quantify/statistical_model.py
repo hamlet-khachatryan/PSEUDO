@@ -38,7 +38,7 @@ def sample_null_distribution(
     protein_mask.setup_from(st, spacing=0.5)
     masker.put_mask_on_float_grid(protein_mask, st[0])
     for _ in range(n_samples):
-        frac = np.random.randn(3)
+        frac = np.random.rand(3)
         pos = grid.unit_cell.orthogonalize(gemmi.Fractional(*frac))
         if protein_mask.interpolate_value(pos) == 1:
             snr_bulk = grid.interpolate_value(pos)
