@@ -12,9 +12,7 @@ def test_stochastic_sampler(pdb_file_param: str):
     assert isinstance(ids, list)
     assert len(ids) > 0
     selectors = ids[:2]
-    selection_string = ",".join(
-        ["chain {} and resid {}".format(i[0], i[1]) for i in selectors]
-    )
+    selection_string = ",".join([" ".join(i) for i in selectors])
     selections = sample.stochastic_omission_sampler(
         pdb_file_param,
         omit_type="amino_acids",
@@ -71,9 +69,7 @@ def test_always_omit_with_missing_selectors(pdb_file_param: str):
     fake_selector_1 = ("Z", 99999, "FOO")
     fake_selector_2 = ("Z", 99998, "BAR")
     selectors = [real_selector, fake_selector_1, fake_selector_2]
-    selection_string = ",".join(
-        ["chain {} and resid {}".format(i[0], i[1]) for i in selectors]
-    )
+    selection_string = ",".join([" ".join(i) for i in selectors])
 
     selections = sample.stochastic_omission_sampler(
         pdb_file_param,
