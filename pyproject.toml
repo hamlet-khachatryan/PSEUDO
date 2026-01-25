@@ -38,6 +38,7 @@ dev = [
     "mkdocs",
     "mkdocs-material",
     "mkdocstrings[python]",
+    "ruff",
 ]
 cli = [
     "click"
