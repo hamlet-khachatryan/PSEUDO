@@ -74,7 +74,7 @@ def run_quantification(
         map_cap = len(files)
 
     out_dir = paths["quantify_dir"] / f"k_{k_factor}_cap_{map_cap}"
-    out_dir.mkdir(exist_ok=True)
+    out_dir.mkdir(exist_ok=True, parents=True)
 
     if not force and (out_dir / f"{stem}_snr.ccp4").exists():
         print(f"Results exist for {stem}. Use --force to overwrite.")
