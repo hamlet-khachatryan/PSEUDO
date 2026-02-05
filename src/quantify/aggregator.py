@@ -12,7 +12,8 @@ def solve_voxel(values: np.ndarray, status: np.ndarray):
          - all 1s or all 0s: bias = 0.
     """
     if status is None:
-        return [np.mean(values), np.std(values, ddof=1), values.tolist()]
+        # return [np.mean(values), np.std(values, ddof=1), values.tolist()]
+        return [np.mean(values), np.std(values, ddof=1)]
 
     n_owners = status.shape[1]
     biases = np.zeros(n_owners)
@@ -31,9 +32,9 @@ def solve_voxel(values: np.ndarray, status: np.ndarray):
 
     total_bias_vector = np.dot(status, biases)
     cleaned = values - total_bias_vector
-    result = [np.mean(cleaned), np.std(cleaned, ddof=1), cleaned.tolist()]
+    # result = np.mean(cleaned), np.std(cleaned, ddof=1), cleaned.tolist()
 
-    return result
+    return np.mean(cleaned), np.std(cleaned, ddof=1)
 
 
 def aggregate_ensemble(
@@ -45,7 +46,7 @@ def aggregate_ensemble(
     sig_map = np.zeros((nx, ny, nz), dtype=np.float32)
     nos_map = np.zeros((nx, ny, nz), dtype=np.float32)
     snr_map = np.zeros((nx, ny, nz), dtype=np.float32)
-    distributions = np.empty((nx, ny, nz), dtype=object)
+    # distributions = np.empty((nx, ny, nz), dtype=object)
 
     for i in range(nx):
         for j in range(ny):
@@ -56,11 +57,12 @@ def aggregate_ensemble(
                 vals = ensemble_data[:, i, j, k]
                 status = query_voxel_ownership(spatial_index, coords, n_maps)
 
-                s, n, d = solve_voxel(vals, status)
+                # s, n, d = solve_voxel(vals, status)
+                s, n = solve_voxel(vals, status)
 
                 sig_map[i, j, k] = s
                 nos_map[i, j, k] = n
                 snr_map[i, j, k] = s / n if n > 1e-12 else 0.0
-                distributions[i, j, k] = d
+                # distributions[i, j, k] = d
 
-    return sig_map, nos_map, snr_map, distributions
+    return sig_map, nos_map, snr_map  # , distributions

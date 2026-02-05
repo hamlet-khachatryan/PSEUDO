@@ -23,18 +23,26 @@ def load_ensemble(results_dir: Path, stem: str, map_cap: Optional[int]):
     """
     Loads MTZ files into a 4D numpy array.
     """
-    ensemble = []
+
+    first_path = results_dir / f"{stem}_0" / f"{stem}_0.mtz"
+    if not first_path.exists():
+        raise FileNotFoundError("First map not found")
+
+    ref_map = read_mtz(str(first_path))
+    ref_grid = ref_map.grid
+    shape = ref_grid.shape
+
+    ensemble_array = np.zeros((map_cap, *shape), dtype=np.float32)
+
     for i in range(map_cap):
         p = results_dir / f"{stem}_{i}" / f"{stem}_{i}.mtz"
+        if p.exists():
+            temp_grid = read_mtz(str(p)).grid
+            ensemble_array[i] = temp_grid.array
 
-        if not p.exists():
+        else:
             print(f"Warning: Missing map {i} at {p}. Skipping.")
             continue
-
-        ensemble.append(read_mtz(str(p)).grid)
-
-    ensemble_array = np.stack([i.array for i in ensemble])
-    ref_grid = ensemble[0]
 
     return ensemble_array, ref_grid
 
@@ -105,12 +113,13 @@ def run_quantification(
         return
 
     data, grid = load_ensemble(paths["results_dir"], stem, map_cap)
-    sig, nos, snr, dists = aggregator.aggregate_ensemble(data, grid, spatial_index)
+    # sig, nos, snr, dists = aggregator.aggregate_ensemble(data, grid, spatial_index)
+    sig, nos, snr = aggregator.aggregate_ensemble(data, grid, spatial_index)
 
     save_map(sig, grid, out_dir / f"{stem}_mean.ccp4")
     save_map(nos, grid, out_dir / f"{stem}_std.ccp4")
     save_map(snr, grid, out_dir / f"{stem}_snr.ccp4")
-    np.save(out_dir / f"{stem}_distributions.npy", dists, allow_pickle=True)
+    # np.save(out_dir / f"{stem}_distributions.npy", dists, allow_pickle=True)
 
     print("Running statistical modeling")
 
