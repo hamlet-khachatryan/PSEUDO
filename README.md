@@ -1,4 +1,4 @@
-# PSEUDO: Protein Structure Error and Uncertainty Determination and Optimisation
+# PSEUDO: Framework for Phase Uncertainty Estimation of Protein Models
 
 PSEUDO is a computational framework for debiasing and experimental uncertainty quantification in protein structural models resolved by molecular replacement.
 
