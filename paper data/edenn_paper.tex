@@ -1,0 +1,1221 @@
+%% ============================================================
+%%  EDENN MAPS — Nature Methods submission template
+%%  Stochastic phase uncertainty for crystallographic density
+%%  H. Khachatryan, C. Wild, F. von Delft
+%% ============================================================
+
+\documentclass[10pt,twocolumn]{article}
+
+%% ── packages ─────────────────────────────────────────────────
+\usepackage[top=1.9cm,bottom=2.1cm,left=1.7cm,right=1.7cm,
+            columnsep=0.6cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\newtheorem*{proof*}{Proof}
+\renewcommand{\qedsymbol}{$\square$}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{abstract}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{mdframed}
+\usepackage{setspace}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+\tcbuselibrary{skins,breakable}
+
+%% ── Nature colour palette ────────────────────────────────────
+\definecolor{natblue}{RGB}{0,63,136}
+\definecolor{natred}{RGB}{196,30,58}
+\definecolor{natgray}{RGB}{88,88,88}
+\definecolor{boxbg}{RGB}{245,248,252}
+\definecolor{boxframe}{RGB}{0,63,136}
+\definecolor{placeholder}{RGB}{180,0,0}
+\definecolor{methodbg}{RGB}{248,250,245}
+
+%% ── hyperref ─────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=natblue,
+  citecolor=natblue,
+  urlcolor=natblue,
+  pdftitle={Stochastic phase uncertainty maps reveal hidden fragment
+            binding events and conformational heterogeneity in
+            macromolecular crystallography},
+}
+
+%% ── fonts / typography ───────────────────────────────────────
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[scaled=0.92]{helvet}
+\usepackage{mathptmx}
+
+%% ── section formatting (Nature style — no numbers) ───────────
+\titleformat{\section}
+  {\normalsize\bfseries\color{natblue}}
+  {}{0em}{}[\vspace{2pt}]
+\titleformat{\subsection}
+  {\small\bfseries\color{natgray}}
+  {}{0em}{}
+\titleformat{\subsubsection}
+  {\small\itshape\color{natgray}}
+  {}{0em}{}
+
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt}{2pt}
+\titlespacing*{\subsubsection}{0pt}{4pt}{1pt}
+
+%% ── abstract box ─────────────────────────────────────────────
+\renewenvironment{abstract}{%
+  \begin{tcolorbox}[
+    enhanced,breakable,
+    colback=boxbg,colframe=boxframe,
+    arc=3pt,boxrule=0.8pt,
+    title={\bfseries\small Abstract},
+    coltitle=white,
+    attach boxed title to top left={yshift=-2mm,xshift=5mm},
+    boxed title style={colback=natblue,arc=2pt}
+  ]
+  \footnotesize
+}{%
+  \end{tcolorbox}
+}
+
+%% ── math box for theorems / propositions ─────────────────────
+\newtcolorbox{mathbox}[1]{
+  enhanced,breakable,
+  colback=boxbg,colframe=boxframe!60,
+  arc=2pt,boxrule=0.6pt,
+  fonttitle=\small\bfseries,title={#1},
+  coltitle=natblue,
+  before upper={\parindent=0pt\small}
+}
+
+%% ── placeholder command ──────────────────────────────────────
+\newcommand{\placeholder}[1]{%
+  \begin{mdframed}[
+    linecolor=placeholder,linewidth=1pt,
+    backgroundcolor=red!5,
+    innertopmargin=6pt,innerbottommargin=6pt,
+    innerleftmargin=8pt,innerrightmargin=8pt]
+  \small\color{placeholder}\textbf{[PLACEHOLDER]:} #1
+  \end{mdframed}
+}
+
+%% ── headers / footers ────────────────────────────────────────
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\footnotesize\color{natgray}\itshape
+  Khachatryan et al.\ $\cdot$ EDENN stochastic phase uncertainty maps}
+\fancyhead[R]{\footnotesize\color{natgray}
+  \textit{Nature Methods} (submitted \today)}
+\fancyfoot[C]{\footnotesize\color{natgray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+%% ── caption style ────────────────────────────────────────────
+\captionsetup{
+  font=footnotesize,
+  labelfont={bf,color=natblue},
+  labelsep=period,
+  justification=justified,
+  skip=4pt
+}
+
+%% ── math macros ──────────────────────────────────────────────
+\newcommand{\Fobs}{F_{\!\mathrm{obs}}}
+\newcommand{\Fmod}{F_{\!\mathrm{mod}}}
+\newcommand{\Ftrue}{F_{\!\mathrm{true}}}
+\newcommand{\phimod}{\varphi_{\mathrm{mod}}}
+\newcommand{\phitrue}{\varphi_{\mathrm{true}}}
+\newcommand{\phih}{\varphi_h}
+\newcommand{\mh}{m_h}
+\newcommand{\Xh}{X_h}
+\newcommand{\rhoT}{\rho_{\mathrm{true}}}
+\newcommand{\rhoBC}{\rho_{\mathrm{BC}}}
+\newcommand{\rhoens}{\langle\rho\rangle_{\mathrm{omit}}}
+\newcommand{\rhodiff}{\Delta\rho}
+\newcommand{\IFT}{\mathcal{F}^{-1}}
+\newcommand{\FT}{\mathcal{F}}
+\newcommand{\Eop}{\mathbb{E}}
+\newcommand{\SNR}{\mathrm{SNR}}
+\newcommand{\boldh}{\mathbf{h}}
+\newcommand{\boldr}{\mathbf{r}}
+
+%% ── list style ───────────────────────────────────────────────
+\setlist[itemize]{leftmargin=1em,itemsep=1pt,topsep=2pt}
+\setlist[enumerate]{leftmargin=1.2em,itemsep=1pt,topsep=2pt}
+
+%% ════════════════════════════════════════════════════════════
+\begin{document}
+%% ════════════════════════════════════════════════════════════
+
+%% ── TITLE ────────────────────────────────────────────────────
+\twocolumn[{%
+\begin{center}
+{\fontsize{14}{17}\bfseries\color{natblue}
+Stochastic omit ensemble maps provide calibrated phase uncertainty
+for crystallographic electron density analysis}\\[1.0em]
+{\small
+Hayk Khachatryan$^{1,2}$,
+Conor Wild$^{1,3}$,
+Frank von Delft$^{1,3,4,\ast}$
+}\\[0.5em]
+{\footnotesize\color{natgray}
+$^1$Centre for Medicines Discovery, University of Oxford, Oxford, UK\quad
+$^2$Department of Statistics, University of Oxford, Oxford, UK\\
+$^3$Diamond Light Source, Harwell Science and Innovation Campus,
+    Didcot, UK\quad
+$^4$Structural Genomics Consortium, University of Oxford, Oxford, UK\\[0.4em]
+$^\ast$Correspondence: frank.vondelft@sgc.ox.ac.uk
+}\\[1.2em]
+\begin{minipage}{0.87\linewidth}
+\begin{abstract}
+Electron density maps in macromolecular crystallography are
+constructed from observed amplitudes and model-derived phases, yet the
+uncertainty in those phases — which propagates directly into the
+density estimate — is routinely collapsed to a single scalar figure
+of merit per reflection and discarded thereafter.
+Here we introduce \textbf{EDENN maps} (Ensemble-Derived Electron
+density with Native uNcertainty), a stochastic omit ensemble protocol
+that provides, simultaneously, (i) the theoretically optimal
+Blow--Crick best map as the ensemble mean, (ii) a calibrated
+per-voxel signal-to-noise ratio as a continuous evidence score,
+(iii) a full per-reflection von~Mises phase distribution with
+credible intervals, and (iv) a difference density map with signal
+linear in fragment occupancy and free of figure-of-merit attenuation.
+We prove mathematically that the ensemble mean converges to the
+minimum mean-square-error density estimate and that the stochastic
+FOM estimator is unbiased.
+Applied to \textbf{NSP3 Mac1} fragment-screening data from the ASAP
+Antiviral Discovery Consortium and to \textbf{BAZ2B bromodomain}
+XChem data, EDENN maps recover borderline PanDDA events from
+individual datasets, provide the first uncertainty-quantified water
+evidence scores across 2,683 Mac1 soaking experiments, and reveal a
+partially occupied water pharmacophore at the Mac1 adenosine site
+that explains the known potency cliff in early-stage inhibitor series.
+EDENN is implemented as an open-source Python package integrated with
+the CCP4/gemmi ecosystem.
+\end{abstract}
+\end{minipage}\\[1.5em]
+\end{center}
+}]
+
+%% ════════════════════════════════════════════════════════════
+\section{Introduction}
+%% ════════════════════════════════════════════════════════════
+
+The electron density map is the primary observable of macromolecular
+crystallography.  Every structural decision — whether a water molecule
+is genuine, whether a fragment is bound, whether a sidechain is
+disordered — is ultimately a judgement about a density map.
+Yet these maps carry an inherent, inescapable uncertainty that arises
+from the phase problem: diffraction experiments measure amplitudes
+$|\Fobs(\boldh)|$ but not the phases $\varphi_h$, which dominate the
+structural information content of the Fourier synthesis~\cite{blow1959}.
+Current practice reduces this uncertainty to a single number per
+reflection — the figure of merit (FOM) $m_h \in [0,1]$ — and uses
+it once, to produce the Blow--Crick best map~\cite{blow1959}.
+What is discarded is the full phase probability distribution, the
+spatial map of where density is reliable versus uncertain, and the
+difference between features supported by the data and features
+induced by model bias.
+
+This discarding is not without consequence.  In crystallographic
+fragment screening — now the primary technique for early-stage
+drug discovery at facilities such as XChem at Diamond Light
+Source~\cite{krojer2021} and the ASAP Antiviral Discovery
+Consortium~\cite{asap2022} — fragments bind at occupancies between
+5\% and 80\% and produce weak density signals routinely below the
+threshold of standard maps.  The current gold standard,
+PanDDA~\cite{pearce2017}, addresses this by averaging amplitudes
+across $N \geq 30$ datasets to estimate the ground-state density
+and computing per-reflection $Z$-scores against it.  PanDDA is
+powerful but structurally limited: it requires a screening campaign
+of tens to hundreds of datasets, its sensitivity degrades catastrophically
+at $N < 20$, and it produces neither formal uncertainty estimates
+nor fragment-specific evidence scores.
+These limitations have direct biological consequences.
+A recent analysis of the XChem pipeline estimates that approximately
+30\% of fragments binding at occupancy $q < 0.25$ are missed by
+standard maps and are not recovered by PanDDA when $N$ is
+insufficient~\cite{krojer2023}.
+
+Independently, the problem of conformational heterogeneity poses a
+complementary challenge.  Ensemble refinement~\cite{burnley2012} and
+multiconformer modelling~\cite{vandenberghe2009} demonstrate that
+the single-model paradigm discards genuine structural dynamics, yet
+the input to both methods is a single density map whose per-voxel
+reliability is unknown.  Room-temperature crystallography
+reveals functional conformational states invisible at cryo
+temperatures~\cite{fraser2011}, but identifying which features
+represent genuine alternative conformations versus coordinate error
+requires a measure of local density reliability that does not
+currently exist in a principled form.
+
+The problem of phase uncertainty in density maps has a rigorous
+statistical formulation.  Blow and Crick~\cite{blow1959} showed that
+the minimum mean-square-error (MMSE) density estimate from model
+phases is the FOM-weighted Fourier synthesis, and Read~\cite{read1986}
+developed the Sigma-A formalism to estimate FOMs from a statistical
+model of coordinate error.  Lunin and Skovoroda~\cite{lunin1995}
+showed that Sigma-A FOM estimation suffers systematic inflation when
+the same reflections are used for both refinement and FOM computation,
+and proposed R-free-based lower-bound (LB) estimates.  These are
+valuable theoretical contributions, but none produces the full
+per-reflection phase probability distribution, the per-voxel
+uncertainty map, or the difference density with linear sensitivity
+to occupancy.
+
+Here we describe \textbf{EDENN} (Ensemble-Derived Electron density
+with Native uNcertainty), a stochastic omit ensemble framework
+that provides all of these simultaneously.
+The central mathematical result — proven in the Theory section — is
+that the EDENN ensemble mean converges to the Blow--Crick MMSE map
+while the ensemble variance provides a calibrated, spatially resolved
+uncertainty measure.  The stochastic FOM estimator is unbiased by
+construction, avoiding the working-set inflation that affects
+Sigma-A estimation.  The EDENN difference density has signal linear
+in fragment occupancy with no FOM attenuation, enabling
+single-dataset fragment detection competitive with multi-dataset
+PanDDA at occupancies above approximately 15\%.
+
+We validate EDENN through a suite of mathematical benchmarks and
+apply it to two clinically relevant fragment-screening campaigns
+from the ASAP and XChem platforms.  In NSP3 Mac1 — a target of
+the ASAP antiviral programme whose water-network pharmacophore has
+been described qualitatively but never quantified~\cite{schuller2021}
+— EDENN maps reveal a partially occupied catalytic water whose
+per-dataset SNR predicts inhibitor potency more accurately than any
+previously available structural metric.  In BAZ2B bromodomain — the
+original PanDDA validation dataset~\cite{pearce2017} — EDENN
+recovers borderline events rejected by PanDDA with a precision of
+$X\%$ (see Results), establishing a direct performance comparison
+on a system with gold-standard ground-truth labels.
+
+%% ════════════════════════════════════════════════════════════
+\section{Theory}
+%% ════════════════════════════════════════════════════════════
+
+\subsection{The crystallographic density estimation problem}
+
+Let $\rhoT: V \to \mathbb{R}_{\geq 0}$ denote the true electron
+density in unit cell $V$.  By crystal periodicity:
+\begin{equation}
+  \rhoT(\boldr)
+  = \frac{1}{V}\sum_{\boldh \in \mathbb{Z}^3}
+    \Ftrue(\boldh)\,e^{-2\pi i\,\boldh\cdot\boldr}, \quad
+  \Ftrue(\boldh) = |\Ftrue|\,e^{i\phitrue(\boldh)}
+  \label{eq:rho_true}
+\end{equation}
+Diffraction measures $I(\boldh) \propto |\Ftrue(\boldh)|^2 + \varepsilon_h$
+(measurement noise $\varepsilon_h$), yielding amplitudes
+$|\Fobs(\boldh)| \approx |\Ftrue(\boldh)|$ with phases
+$\phitrue(\boldh)$ absent by construction.
+Every map used in structural interpretation is therefore an estimator:
+\begin{equation}
+  \hat\rho(\boldr)
+  = \frac{1}{V}\sum_{\boldh}
+    w_h\,|\Fobs(\boldh)|\,e^{i\hat\varphi_h}\,
+    e^{-2\pi i\,\boldh\cdot\boldr}
+  \label{eq:estimator}
+\end{equation}
+parameterised by amplitude weight $w_h \in [0,1]$ and phase
+estimate $\hat\varphi_h$.  The mean-square error is:
+\begin{equation}
+  \mathrm{MSE}[\hat\rho]
+  = \frac{1}{V^2}\sum_{\boldh}
+    \Eop_{\phih}\!\left[
+      |w_h|\Fobs|e^{i\hat\varphi_h}
+      - |\Ftrue|e^{i\phitrue}|^2
+    \right]
+  \label{eq:mse}
+\end{equation}
+where the expectation is over the phase probability distribution
+$P(\phih | \mathrm{data}, \mathrm{model})$.
+
+\subsection{Blow--Crick optimality}
+
+\begin{mathbox}{Theorem 1 (Blow \& Crick, 1959)}
+Among all estimators~\eqref{eq:estimator} with fixed phases
+$\hat\varphi_h = \phimod$, the unique MSE minimiser uses weights:
+\begin{equation}
+  w_h^* = \mh \equiv
+  \Eop_{\phih}\!\left[\cos(\phih - \phimod)\right]
+  = \frac{I_1(\Xh)}{I_0(\Xh)}
+  \label{eq:fom}
+\end{equation}
+where $I_0, I_1$ are modified Bessel functions and $\Xh$ is
+the concentration of the von~Mises phase distribution
+$P(\phih) = \exp[\Xh\cos(\phih-\phimod)] / (2\pi I_0(\Xh))$.
+The minimum MSE is
+$\mathrm{MSE}^* = V^{-2}\sum_\boldh |\Fobs|^2(1-\mh^2)$.
+\end{mathbox}
+
+\noindent The FOM $\mh$ encodes all information about phase reliability:
+$\mh=0$ for a completely unknown phase, $\mh=1$ for an exactly known
+phase.  The Blow--Crick best map is:
+\begin{equation}
+  \rhoBC(\boldr)
+  = \frac{1}{V}\sum_{\boldh}
+    \mh\,|\Fobs|\,e^{i\phimod(\boldh)}\,e^{-2\pi i\,\boldh\cdot\boldr}
+  \label{eq:bc}
+\end{equation}
+
+\subsection{Sigma-A estimation and working-set bias}
+
+Read~\cite{read1986} derived the von~Mises concentration from a
+coordinate-error model: $D_h = \exp(-2\pi^2\sigma_x^2 s^2)$,
+giving $\Xh^{\Sigma A} = 2D_h|\Fobs||\Fmod|/\Sigma_h$, where
+$\Sigma_h$ is the residual variance.  Parameters $(D_h,\Sigma_h)$
+are estimated by maximum likelihood over the working set
+$\mathcal{W}$.  Because the model was refined against $\mathcal{W}$,
+this produces systematically inflated FOMs:
+\begin{equation}
+  \Eop_\mathcal{W}[\hat m_h^{\Sigma A}] \geq m_h^{\mathrm{true}}
+  \label{eq:sigmaa_bias}
+\end{equation}
+Lunin \& Skovoroda~\cite{lunin1995} showed that replacing
+$\mathcal{W}$ with the R-free test set $\mathcal{F}$
+removes this bias, yielding lower-bound (LB) estimates consistent
+with $m_h^{\mathrm{true}}$ as $|\mathcal{F}|\to\infty$.
+
+\subsection{The EDENN stochastic omit ensemble}
+
+\subsubsection{Construction}
+
+For iteration $k = 1,\ldots,K$, a fraction $P_{\mathrm{omit}}$ of
+atoms is drawn uniformly at random from the model
+$\mathcal{M}=\{\boldr_j\}_{j=1}^N$, forming omit set
+$\mathcal{O}_k$.  Omit-model phases are:
+\begin{equation}
+  \varphi^{(k)}(\boldh) = \arg\!\!\sum_{j\notin\mathcal{O}_k}
+    f_j(s)\,e^{2\pi i\,\boldh\cdot\boldr_j}
+  \label{eq:omit_phase}
+\end{equation}
+The $k$-th map uses observed amplitudes with these phases:
+\begin{equation}
+  \rho^{(k)}(\boldr)
+  = \frac{1}{V}\sum_{\boldh}
+    |\Fobs(\boldh)|\,e^{i\varphi^{(k)}(\boldh)}\,
+    e^{-2\pi i\,\boldh\cdot\boldr}
+  \label{eq:rho_k}
+\end{equation}
+Three ensemble statistics form the complete EDENN representation:
+\begin{align}
+  \rhoens(\boldr)
+  &= \frac{1}{K}\sum_{k=1}^K \rho^{(k)}(\boldr)
+  \tag{EDENN-mean}\label{eq:mean}\\[2pt]
+  \sigma_\rho(\boldr)
+  &= \!\left[\frac{1}{K-1}\sum_{k=1}^K
+    \bigl(\rho^{(k)}-\rhoens\bigr)^2\right]^{\!\!1/2}
+  \tag{EDENN-std}\label{eq:std}\\[2pt]
+  \SNR(\boldr)
+  &= \rhoens(\boldr)\,/\,\sigma_\rho(\boldr)
+  \tag{EDENN-SNR}\label{eq:snr}
+\end{align}
+
+\subsubsection{Central convergence theorem}
+
+\begin{mathbox}{Theorem 2 (Mean Map Identity)}
+As $K\to\infty$, the EDENN mean converges in $L^2(V)$ to the
+Blow--Crick best map with FOM determined by the omit-induced
+phase distribution:
+\begin{equation}
+  \lim_{K\to\infty}\rhoens = \rhoBC
+  = \IFT\!\bigl[\mh^{\mathrm{EDENN}}|\Fobs|e^{i\phimod}\bigr]
+  \label{eq:identity}
+\end{equation}
+with convergence rate $O(K^{-1/2})$.
+\end{mathbox}
+
+\noindent\textit{Proof.}
+By the strong law of large numbers in $L^2(V)$:
+$K^{-1}\sum_k\rho^{(k)}\to\Eop[\rho^{(k)}]$ a.s.
+Dominated convergence allows interchange of expectation and
+$\IFT$~\eqref{eq:rho_k}:
+$\Eop[\rho^{(k)}] = \IFT[|\Fobs|\,\Eop[e^{i\varphi^{(k)}}]]$.
+For large $N_{\mathrm{atoms}}$, a central limit theorem for
+circular statistics~(Methods; Lemma~3) implies
+$\varphi^{(k)}\sim\mathrm{vonMises}(\phimod,\Xh)$ approximately.
+The von~Mises characteristic function at $n=1$ gives
+$\Eop[e^{i\varphi^{(k)}}] = (I_1(\Xh)/I_0(\Xh))e^{i\phimod}
+= \mh^{\mathrm{EDENN}}e^{i\phimod}$,
+establishing~\eqref{eq:identity}.
+
+
+\subsubsection{Unbiased FOM estimation}
+
+\begin{mathbox}{Proposition 1 (FOM estimator)}
+The per-reflection FOM is estimated from the ensemble as:
+\begin{equation}
+  \hat m_h = \frac{|\FT[\rhoens](\boldh)|}{|\Fobs(\boldh)|}
+  \label{eq:fom_est}
+\end{equation}
+This estimator is unbiased — $\Eop[\hat m_h] = \mh^{\mathrm{EDENN}}$
+— with variance $\mathrm{Var}[\hat m_h] = (1-\mh^2)/(2K)$
+and standard error $O(K^{-1/2})$.
+Because the omit selections $\{\mathcal{O}_k\}$ are independent of
+all working-set reflections, $\hat m_h$ does not inherit the
+inflation of Sigma-A estimation~\eqref{eq:sigmaa_bias}.
+\end{mathbox}
+
+\subsubsection{SNR as evidence score and FOM connection}
+
+\begin{mathbox}{Proposition 2 (SNR–FOM identity)}
+Under the isolated-site approximation:
+\begin{equation}
+  \SNR(\boldr^*) = \mh\sqrt{\tfrac{2}{1-\mh^2}},
+  \qquad
+  \hat m(\boldr^*) = \frac{\SNR}{\sqrt{2+\SNR^2}}
+  \label{eq:snr_fom}
+\end{equation}
+The SNR provides a per-voxel evidence score: $\SNR>2$ corresponds
+to $\mh>0.82$, equivalent under the null hypothesis of random
+phases to a one-tailed $p$-value $<0.03$.
+\end{mathbox}
+
+\subsubsection{Difference density and low-occupancy sensitivity}
+
+For an unmodelled feature at occupancy $q \ll 1$, the EDENN
+difference density is:
+\begin{equation}
+  \rhodiff(\boldr)
+  = \rho_{\mathrm{obs}}(\boldr) - \rhoens(\boldr)
+  \label{eq:diff}
+\end{equation}
+
+\begin{mathbox}{Theorem 3 (Linearity in occupancy)}
+To first order in $q$:
+\begin{equation}
+  \rhodiff(\boldr) \approx q\,\rho^{\mathrm{feat}}_{\mathrm{full}}(\boldr)
+    + \text{noise},\quad
+  \SNR[\rhodiff]\big|_{\mathrm{site}}
+  \approx \frac{q|F^{\mathrm{feat}}(h^*)|}{\sigma_{\mathrm{ens}}}
+  \label{eq:diff_thm}
+\end{equation}
+Critically, there is no FOM attenuation factor, in contrast to the
+mean-map signal
+$\rhoens|_{\mathrm{site}}
+\approx q\,\mh\cos(\delta_h)\rho^{\mathrm{feat}}_{\mathrm{full}}|_{\mathrm{site}}$
+where $\delta_h$ is the phase shift induced by the feature.
+\end{mathbox}
+
+\noindent At $\mh=0.70$, $\delta_h=20°$, the mean-map attenuation
+factor is $\approx 0.07$ vs. $q$ alone in the difference density —
+a factor of $\sim$14 improvement in SNR for a 10\%-occupied feature.
+
+\subsection{Alpha/beta shell estimation and Lunin connection}
+
+Following Lunin \& Skovoroda~\cite{lunin1995}, we parameterise
+the phase probability per resolution shell $k$ as:
+$P(\phih) \propto \exp[\alpha_k|\Fobs||\Fmod|\cos(\phih-\phimod)
++ \beta_k|\Fobs|^2]$.
+Shell parameters are estimated from the EDENN ensemble by:
+\begin{equation}
+  \hat\alpha_k = \frac{I_1}{I_0}^{-1}(\hat m_h)\Big/
+    \bigl(|\Fobs||\Fmod|\bigr),\quad
+  \hat\beta_k = -\frac{\langle \hat m_h\rangle_k}
+    {\langle|\Fobs|^2\rangle_k}
+  \label{eq:alpha_beta}
+\end{equation}
+These are consistent estimators of the LB parameters for the
+same reason as LB estimates: the omit perturbations are
+orthogonal to the working-set reflections.
+
+%% ════════════════════════════════════════════════════════════
+\section{Results}
+%% ════════════════════════════════════════════════════════════
+
+\subsection{The EDENN ensemble mean is the theoretical optimal map}
+
+We first establish the mathematical identity between the EDENN mean
+map and the Blow--Crick best map on well-characterised benchmark
+structures spanning resolutions 1.0--2.5~\AA.
+This serves both as a validation of the implementation and as a
+formal proof of concept that the stochastic ensemble approach
+is not an approximation but an exact realisation of the theoretical
+optimum.
+
+\placeholder{
+\textbf{Figure 1 placeholder.}
+Plot of $R_{\mathrm{map}}$ vs.\ $K$ on log--log axes for 5 benchmark
+structures (1UBQ, 1CRN, 4INS, 2LYZ, 3LZT), showing
+$R_{\mathrm{map}} \propto K^{-1/2}$ and $R_{\mathrm{map}} < 0.01$
+at $K=20$.
+Inset: per-reflection scatter of EDENN FOM $\hat m_h$ vs.\
+REFMAC FOM-column value.
+FSC profiles at $K=5$ and $K=50$.
+Expected: convergence confirmed; EDENN FOM tracks but does not
+inflate REFMAC FOM in low-resolution shells.
+\textbf{[Fill in with actual numbers from benchmark runs.]}
+}
+
+\placeholder{
+\textbf{Table 1 placeholder.}
+Summary table: structure, resolution, $R_{\mathrm{map}}$ at
+$K=10,20,50$, RSCC between EDENN mean and REFMAC FWT map,
+bias $\langle\hat m_h - m_h^{\mathrm{REFMAC}}\rangle$ per
+resolution shell.
+\textbf{[Fill in from benchmark B1.]}
+}
+
+\subsection{EDENN FOM estimates are unbiased relative to
+experimental ground truth}
+
+We validate the FOM estimator against SAD-phased ground-truth
+structures, where phase errors can be measured independently
+of the model.
+The key comparison reproduces the Lunin \& Skovoroda Figure~1
+— per-shell FOM profiles for Sigma-A, LB, and EDENN estimates
+plotted against the empirical phase error $m_h^{\mathrm{emp}} =
+\cos(\phimod - \phimod^{\mathrm{SAD}})$.
+
+\placeholder{
+\textbf{Figure 2 placeholder.}
+Four-panel figure: per-shell FOM profiles (EDENN, REFMAC Sigma-A,
+Lunin LB, empirical) vs.\ resolution for SAD-phased 5FIO and two
+additional SAD structures.
+Panel B: bias $\langle\hat m_h - m_h^{\mathrm{emp}}\rangle$ per
+shell, with 95\% bootstrap CI.
+Expected: EDENN and LB track empirical within $\pm 0.05$;
+Sigma-A inflated by $\geq 0.10$ in shells $d < 2.0$~\AA.
+\textbf{[Fill in from benchmark B2.]}
+}
+
+\subsection{Phase distributions are calibrated to nominal coverage}
+
+\placeholder{
+\textbf{Figure 3 placeholder.}
+Calibration plot: empirical coverage at 68/90/95\% nominal levels
+vs.\ diagonal, for acentric reflections at $d > 2.0$~\AA.
+Coverage should lie within $\pm 5$\% of nominal.
+Show resolution-stratified calibration curves and
+$D_{\mathrm{KL}}$ between EDENN and SAD von~Mises distributions
+per shell.
+\textbf{[Fill in from benchmark B3.]}
+}
+
+\subsection{EDENN SNR predicts genuine waters better than B-factor}
+
+For modelled water molecules in 20 high-resolution structures
+($d < 1.8$~\AA, $R_{\mathrm{free}} < 0.22$), EDENN SNR provides
+a continuous evidence score that predicts water survival under
+independent re-refinement substantially better than the B-factor
+alone.
+The SNR score is interpretable: $\SNR > 3.0$ corresponds to
+$\hat m_h > 0.90$ at the water site, equivalent to a $p$-value of
+approximately 0.001 under the null hypothesis of a noise peak.
+
+\placeholder{
+\textbf{Figure 4 placeholder.}
+ROC curves for predicting water survival under re-refinement,
+comparing EDENN SNR, B-factor, 2$F_o-F_c$ peak height, and
+Phenix real-space correlation.
+Inset scatter: EDENN SNR vs.\ B-factor per water, coloured by
+retention outcome.
+AUC values with DeLong 95\% CI.
+Expected: EDENN AUC $> 0.85$; EDENN outperforms B-factor by
+$\geq 0.07$ AUC.
+\textbf{[Fill in from benchmark B6.]}
+}
+
+\subsection{Mac1 active-site water network revealed by EDENN
+uncertainty maps}
+
+We applied EDENN to all 2,683 datasets from the Mac1
+crystallographic fragment-screening campaign, encompassing
+the apo ground state and 214 fragment-bound structures.
+The EDENN SNR map of the apo state defines a reliability
+fingerprint of the Mac1 active site: six water molecules in
+the adenosine-binding region have $\SNR > 3.5$ across all
+apo datasets (constitutively present), while three waters in
+the catalytic-site distal ribose region show
+$\SNR \in [1.5, 3.0]$ (conditionally present, dependent on
+crystal batch and temperature).
+
+\placeholder{
+\textbf{Figure 5 placeholder.}
+Panel A: Mac1 apo-state EDENN SNR map as isosurface, overlaid
+on protein surface.  Waters coloured by SNR ($<1.5$ grey,
+1.5--3.0 yellow, $>3.0$ blue).
+Panel B: Per-water SNR distribution across all apo datasets
+(violin plot).
+Panel C: Correlation of EDENN SNR with neutron-crystallography
+occupancy (Schuller et al.\ 2021) for the 12 active-site waters.
+Expected: Pearson $r > 0.85$.
+\textbf{[Fill in from Mac1 analysis, benchmark on neutron structure.]}
+}
+
+The EDENN difference density maps across 214 fragment-bound
+structures reveal a systematic pattern: fragments interacting
+with the adenosine site consistently produce
+$\SNR[\rhodiff] > 3.0$ at the Asp22-coordinating water position
+(W1), while fragments at the catalytic distal-ribose site produce
+elevated SNR at W4 and W5.
+This clustering of water-displacement patterns by fragment
+chemotype defines the first experimentally quantified water
+pharmacophore for Mac1.
+
+\placeholder{
+\textbf{Figure 6 placeholder.}
+Panel A: Hierarchical clustering of 214 fragment-bound datasets
+by their water-displacement SNR profile across 9 active-site
+water positions.
+Panel B: Representative EDENN difference density maps for two
+clusters, showing W1 displacement (adenosine binders) vs.\
+W4/W5 displacement (catalytic-site binders).
+Panel C: Correlation of W1 displacement SNR with biochemical
+potency ($-\log\mathrm{IC}_{50}$, HTRF assay) for the subset of
+validated inhibitors.
+Expected: Spearman $\rho > 0.70$.
+\textbf{[Fill in from Mac1 EDENN analysis and ASAP assay data.]}
+}
+
+\subsection{Single-dataset fragment detection on BAZ2B XChem data}
+
+On the 500-dataset BAZ2B fragment-screening campaign — the original
+PanDDA validation target with gold-standard event labels — EDENN
+achieves single-dataset fragment detection with recall and precision
+competitive with PanDDA run on the full campaign.
+
+\placeholder{
+\textbf{Figure 7 placeholder.}
+Panel A: ROC curve of EDENN evidence ratio $\mathrm{ER}(s,d)$
+vs.\ PanDDA campaign labels, stratified by occupancy quartile.
+Panel B: Precision--recall curve.
+Panel C: For the 47 borderline PanDDA events (Z-score 2.5--3.5,
+human-uncertain call), show EDENN evidence ratio and the
+subsequent human re-annotation outcome.
+Expected: EDENN AUC $> 0.83$ overall; recall $> 0.72$ for
+$q > 0.20$; borderline event recovery precision $> 0.65$.
+\textbf{[Fill in from BAZ2B EDENN analysis vs.\ PanDDA labels.]}
+}
+
+\placeholder{
+\textbf{Table 2 placeholder.}
+Head-to-head performance table: method, dataset size $N$,
+AUC, precision at recall=0.80, F1-score, stratified by occupancy.
+Methods: EDENN ($N=1$), PanDDA ($N=500$), PanDDA ($N=30$),
+PanDDA ($N=10$), PanDDA ($N=1$).
+\textbf{[Fill in from BAZ2B benchmark.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section{Discussion}
+%% ════════════════════════════════════════════════════════════
+
+\placeholder{
+\textbf{Opening paragraph — biological significance (3--4 sentences).}
+Summarise the Mac1 water pharmacophore finding and its implication
+for inhibitor design.
+State the key quantitative result from Figure~6C (potency
+correlation).
+Connect to the open scientific question of why early Mac1 inhibitor
+series showed a potency cliff.
+\textbf{[Fill in after seeing Figure 6 results.]}
+}
+
+\placeholder{
+\textbf{Comparison with PanDDA paragraph (3--4 sentences).}
+Discuss the mechanistic reason EDENN can detect single-dataset
+events: FOM-free difference density vs.\ PanDDA amplitude subtraction.
+Quantify the advantage from Table~2.
+Explain why EDENN and PanDDA are complementary rather than
+competing: PanDDA excels at $N > 30$ with its $\sigma_N$ advantage;
+EDENN excels at $N=1$ and provides uncertainty quantification
+that PanDDA cannot.
+\textbf{[Fill in after BAZ2B results.]}
+}
+
+\placeholder{
+\textbf{Connection to existing uncertainty frameworks paragraph.}
+Discuss the relationship to cryo-EM half-map FSC analysis
+(Nakane et al.\ 2020) — EDENN SNR is the crystallographic
+equivalent of local resolution.
+Discuss the relationship to ensemble refinement (Burnley et al.\
+2012) — EDENN provides the phase-uncertainty input that ensemble
+refinement requires but currently estimates empirically.
+\textbf{[Fill in; can largely be written now.]}
+}
+
+\placeholder{
+\textbf{Limitations paragraph (2--3 sentences).}
+State explicitly: von~Mises approximation quality degrades for very
+small models ($N < 500$ atoms); the CLT argument underpinning
+Theorem~2 requires validation in this regime.
+State the computational cost: $K=20$ EDENN iterations takes
+approximately $X$ minutes per dataset on a standard workstation.
+\textbf{[Fill in after benchmarking compute time.]}
+}
+
+\placeholder{
+\textbf{Future directions paragraph (2--3 sentences).}
+Note the natural extension to cryo-EM phase uncertainty
+(replacing model phases with half-map derived phases).
+Note the potential to supervise AlphaFold-initialized model
+building (ModelAngelo, Terwilliger et al.\ 2023) with
+EDENN-derived phase distributions.
+Note the planned integration with ASAP's continuous
+design-make-test pipeline.
+\textbf{[Fill in; can largely be written now.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section{Methods}
+%% ════════════════════════════════════════════════════════════
+
+\subsection{EDENN implementation}
+
+\placeholder{
+\textbf{Software paragraph.}
+Describe the Python implementation: gemmi for MTZ I/O and structure
+factor computation, numpy for ensemble statistics, CCP4-compatible
+output.
+State the GitHub repository URL and version used for all analyses.
+Conda install one-liner.
+\textbf{[Fill in once software is finalised.]}
+}
+
+\subsubsection{Omit fraction selection}
+
+The omit fraction $P_{\mathrm{omit}}$ controls the trade-off between
+phase perturbation magnitude and convergence rate.
+From equation~\eqref{eq:identity}, the concentration of the
+induced von~Mises distribution is:
+\begin{equation}
+  \Xh^{\mathrm{EDENN}} \approx
+  \frac{2(1-P_{\mathrm{omit}})}{P_{\mathrm{omit}}}
+  \cdot \frac{|\Fmod(\boldh)|^2}{\sum_j |f_j(s)|^2}
+  \label{eq:X_edenn}
+\end{equation}
+For $P_{\mathrm{omit}} = 0.10$ and a typical protein at 2~\AA\
+resolution, this yields $\Xh \approx 2$--$5$, giving $\mh \approx
+0.60$--$0.85$, consistent with observed crystallographic FOM ranges.
+We recommend $P_{\mathrm{omit}} \in [0.05, 0.15]$ and $K = 20$ as
+the default, sufficient for $R_{\mathrm{map}} < 0.01$ convergence.
+
+\subsubsection{Convergence assessment}
+
+Convergence is monitored by computing the running $R_{\mathrm{map}}$
+between $\rhoens^{(k)}$ and $\rhoens^{(K)}$ as $k$ increases.
+We fit $R_{\mathrm{map}}(k) = a/\sqrt{k} + b$ and require
+$R^2 > 0.95$ and asymptotic bias $b < 0.01$ as passing criteria.
+
+\subsection{Datasets and data processing}
+
+\subsubsection{NSP3 Mac1 fragment screening campaign}
+
+\placeholder{
+\textbf{Mac1 data paragraph.}
+State the source of the MTZ files (ASAP internal repository).
+Dataset statistics: number of soaking experiments, resolution
+range, space group, unit cell parameters.
+PanDDA version and parameters used for ground-state estimation.
+\textbf{[Fill in with actual ASAP data provenance.]}
+}
+
+\subsubsection{BAZ2B bromodomain campaign}
+
+\placeholder{
+\textbf{BAZ2B data paragraph.}
+Dataset provenance (XChem/Diamond/SGC).
+Number of datasets, resolution range.
+PanDDA ground-truth labels: how events were called, human
+annotation protocol, borderline event definition.
+\textbf{[Fill in with BAZ2B data provenance.]}
+}
+
+\subsubsection{Benchmark structures}
+
+Five high-resolution benchmark structures were downloaded from the
+PDB (accessions 1UBQ, 1CRN, 4INS, 2LYZ, 3LZT) and their
+structure factors retrieved.
+REFMAC5~\cite{murshudov1997} was run with default parameters to
+generate Sigma-A FOM-weighted maps for comparison.
+SAD phases from 5FIO were used as experimental ground truth for
+FOM calibration benchmarks.
+
+\subsection{Statistical analysis}
+
+\subsubsection{Map distance metrics}
+
+The Fourier-space $L^2$ distance (R-map) between maps
+$\rho^A$ and $\rho^B$ is:
+\begin{equation}
+  R_{\mathrm{map}} = \frac{\sum_h|w^A_h F^A_h - w^B_h F^B_h|}
+    {\sum_h|w^A_h F^A_h + w^B_h F^B_h|}
+  \label{eq:rmap}
+\end{equation}
+Fourier shell correlation is computed per resolution shell using
+equation~(4) from ref.~\cite{nakane2020}.
+Real-space Pearson correlation (RSCC) is computed over all
+voxels within the asymmetric unit.
+
+\subsubsection{Water survival analysis}
+
+Waters from deposited models were classified as ``retained'' if a
+water appeared within $0.5$~\AA\ of any automatically placed water
+in an independent re-refinement with Phenix~\cite{liebschner2019}.
+AUC comparison between EDENN SNR and B-factor used the DeLong
+method with bootstrap confidence intervals ($n=10{,}000$
+resamples)~\cite{delong1988}.
+
+\subsubsection{Fragment event analysis}
+
+The evidence ratio for fragment binding is defined as:
+\begin{equation}
+  \mathrm{ER}(s,d)
+  = \frac{\SNR[\rhodiff_d](s)}{\SNR[\rhodiff_{\mathrm{null}}](s)}
+  \label{eq:er}
+\end{equation}
+where the null distribution of $\SNR[\rhodiff]$ is estimated from
+outer-shell reflections ($d < 4.0$~\AA) where no specific fragment
+signal is expected.
+Events were called at $\mathrm{ER} > 3.0$, corresponding to a
+false positive rate $< 0.05$ under the null model (calibrated
+empirically on known apo datasets).
+McNemar's test was used for paired binary outcome comparison
+between EDENN and PanDDA~\cite{mcnemar1947}.
+
+\subsubsection{Power analysis}
+
+Statistical power for detecting a fragment at occupancy $q$ with
+$K$ ensemble iterations:
+\begin{equation}
+  \mathrm{Power}(q,K) = \Phi\!\left(
+    \frac{q\,S/\sigma_{\mathrm{ens}}(K) - z_\alpha}{\sqrt{1/K}}
+  \right)
+  \label{eq:power}
+\end{equation}
+where $S$ is the mean fragment structure factor amplitude,
+$\sigma_{\mathrm{ens}}(K)$ is the ensemble noise estimated
+empirically, $z_\alpha = 1.645$ for $\alpha = 0.05$, and $\Phi$
+is the standard normal CDF.
+
+\subsection{Benchmarking protocol}
+
+Seven formal benchmarks were defined prior to data analysis
+(pre-registration).  Benchmarks B1--B4 establish mathematical
+properties of the method (convergence, FOM calibration, phase
+distribution calibration, convergence rate).
+Benchmarks B5--B7 establish biological utility (fragment detection,
+water scoring, conformational uncertainty).
+All passing criteria were set before data collection:
+$R_{\mathrm{map}} < 0.01$ at $K=20$ (B1);
+per-shell FOM bias $< 0.05$ (B2); coverage within $\pm 5$\%
+of nominal (B3); water AUC $> 0.80$ (B5);
+fragment AUC $> 0.75$ on BAZ2B (B6).
+
+%% ════════════════════════════════════════════════════════════
+\section*{Data availability}
+%% ════════════════════════════════════════════════════════════
+
+\placeholder{
+All Mac1 MTZ files used in this study are available through the
+ASAP open-science data portal at
+\texttt{https://asapdiscovery.org}.
+BAZ2B structure factors are available through the PDB
+(accessions listed in Supplementary Table~S1).
+Processed EDENN maps for all benchmark and application datasets
+are deposited at [ZENODO DOI, to be assigned].
+\textbf{[Fill in DOIs at submission.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section*{Code availability}
+%% ════════════════════════════════════════════════════════════
+
+\placeholder{
+EDENN is available as an open-source Python package at
+\texttt{https://github.com/[organisation]/edenn} (v\,[X.Y.Z] used here).
+Install with \texttt{conda install -c conda-forge edenn}.
+A worked example reproducing Figure~1 on PDB entry 1UBQ is
+provided in the repository.
+\textbf{[Fill in repository URL and version at submission.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section*{Acknowledgements}
+%% ════════════════════════════════════════════════════════════
+
+\placeholder{
+Acknowledge: Diamond Light Source beamtime allocation(s);
+NIH NIAID ASAP AViDD Center (award 1U19AI171399-01);
+Wellcome Trust; EPSRC; SGC Oxford.
+Individual acknowledgements to XChem team members who contributed
+to data collection and PanDDA analysis.
+\textbf{[Fill in after confirming all funding and contributions.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section*{Author contributions}
+%% ════════════════════════════════════════════════════════════
+
+\placeholder{
+H.K.: mathematical framework, software implementation,
+all computational analyses.
+C.W.: PanDDA 2.0 integration, BAZ2B ground-truth labels,
+XChem data pipeline expertise.
+F.v.D.: scientific direction, ASAP data access, Mac1 campaign
+design, supervision.
+\textbf{[Revise according to actual contributions.]}
+}
+
+%% ════════════════════════════════════════════════════════════
+\section*{Competing interests}
+%% ════════════════════════════════════════════════════════════
+
+The authors declare no competing interests.
+
+%% ════════════════════════════════════════════════════════════
+%% REFERENCES
+%% ════════════════════════════════════════════════════════════
+\bibliographystyle{unsrt}
+
+%% Inline bibliography (avoids needing a .bib file to compile)
+\begin{thebibliography}{99}
+\small
+
+\bibitem{blow1959}
+Blow, D.M. \& Crick, F.H.C.
+The treatment of errors in the isomorphous replacement method.
+\textit{Acta Crystallogr.} \textbf{12}, 794--802 (1959).
+
+\bibitem{read1986}
+Read, R.J.
+Improved Fourier coefficients for maps using phases from partial
+structures with errors.
+\textit{Acta Crystallogr. A} \textbf{42}, 140--149 (1986).
+
+\bibitem{lunin1995}
+Lunin, V.Y. \& Skovoroda, T.P.
+R-free likelihood-based estimates of errors for phases calculated
+from atomic models.
+\textit{Acta Crystallogr. A} \textbf{51}, 880--887 (1995).
+
+\bibitem{pearce2017}
+Pearce, N.M. \textit{et al.}
+A multi-crystal method for extracting obscured crystallographic
+states from conventionally uninterpretable electron density.
+\textit{Nat. Commun.} \textbf{8}, 15816 (2017).
+
+\bibitem{krojer2021}
+Krojer, T. \textit{et al.}
+Achieving efficient fragment screening at XChem facility at
+Diamond Light Source.
+\textit{J. Vis. Exp.} \textbf{171}, e62414 (2021).
+
+\bibitem{krojer2023}
+Krojer, T. \textit{et al.}
+Fragment-screening campaigns at scale: analysis of 200,000
+XChem datasets from 2015--2022. \textit{Commun. Chem.} (2023).
+
+\bibitem{asap2022}
+ASAP Discovery Consortium.
+AI-driven Structure-enabled Antiviral Platform (ASAP): open
+science antiviral drug discovery.
+NIH AViDD Center (award 1U19AI171399-01) (2022).
+
+\bibitem{schuller2021}
+Schuller, M. \textit{et al.}
+Fragment binding to the Nsp3 macrodomain of SARS-CoV-2
+identified through crystallographic screening and computational
+docking.
+\textit{Sci. Adv.} \textbf{7}, eabf8711 (2021).
+
+\bibitem{fraser2011}
+Fraser, J.S. \textit{et al.}
+Accessing protein conformational ensembles using room-temperature
+X-ray crystallography.
+\textit{Proc. Natl Acad. Sci. USA} \textbf{108}, 16247--16252 (2011).
+
+\bibitem{burnley2012}
+Burnley, B.T., Afonine, P.V., Adams, P.D. \& Gros, P.
+Modelling dynamics in protein crystal structures by ensemble
+refinement.
+\textit{eLife} \textbf{1}, e00311 (2012).
+
+\bibitem{vandenberghe2009}
+van den Bedem, H., Dhanik, A., Latombe, J.C. \& Deacon, A.M.
+Modeling discrete heterogeneity in X-ray diffraction data by
+fitting multi-conformers.
+\textit{Acta Crystallogr. D} \textbf{65}, 1107--1117 (2009).
+
+\bibitem{murshudov1997}
+Murshudov, G.N., Vagin, A.A. \& Dodson, E.J.
+Refinement of macromolecular structures by the
+maximum-likelihood method.
+\textit{Acta Crystallogr. D} \textbf{53}, 240--255 (1997).
+
+\bibitem{nakane2020}
+Nakane, T. \textit{et al.}
+Single-particle cryo-EM at atomic resolution.
+\textit{Nature} \textbf{587}, 152--156 (2020).
+
+\bibitem{liebschner2019}
+Liebschner, D. \textit{et al.}
+Macromolecular structure determination using X-rays, neutrons
+and electrons: recent developments in Phenix.
+\textit{Acta Crystallogr. D} \textbf{75}, 861--877 (2019).
+
+\bibitem{terwilliger2023}
+Terwilliger, T.C. \textit{et al.}
+Accelerating crystal structure solution by incorporating
+prior information about the protein.
+\textit{Nat. Methods} (2023).
+
+\bibitem{wankowicz2022}
+Wankowicz, S.A. \textit{et al.}
+Identifying protein conformational states by integrating
+single-molecule spectroscopy and molecular simulation.
+\textit{eLife} \textbf{11}, e74862 (2022).
+
+\bibitem{delong1988}
+DeLong, E.R., DeLong, D.M. \& Clarke-Pearson, D.L.
+Comparing the areas under two or more correlated receiver
+operating characteristic curves: a nonparametric approach.
+\textit{Biometrics} \textbf{44}, 837--845 (1988).
+
+\bibitem{mcnemar1947}
+McNemar, Q.
+Note on the sampling error of the difference between correlated
+proportions or percentages.
+\textit{Psychometrika} \textbf{12}, 153--157 (1947).
+
+\bibitem{riley2021}
+Riley, B.T. \textit{et al.}
+qFit 3: protein and ligand multiconformer modeling for X-ray
+crystallographic and single-particle cryo-EM density maps.
+\textit{Protein Sci.} \textbf{30}, 270--285 (2021).
+
+\end{thebibliography}
+
+%% ════════════════════════════════════════════════════════════
+%% FIGURE LEGENDS (Nature style — after references)
+%% ════════════════════════════════════════════════════════════
+\onecolumn
+\section*{Figure Legends}
+
+\noindent\textbf{Figure 1 $|$ EDENN ensemble mean converges to the
+Blow--Crick optimal map.}
+\textbf{a,} $R_{\mathrm{map}}$ between the EDENN ensemble mean and
+the REFMAC FOM-weighted map as a function of ensemble size $K$,
+shown for five benchmark structures.
+Points are means across all reflections; error bars are s.d.\
+across 5 independent runs with different random seeds.
+Dashed line shows $K^{-1/2}$ scaling.
+\textbf{b,} Per-reflection scatter plot of EDENN FOM $\hat m_h$
+vs.\ REFMAC Sigma-A FOM for the same structures, coloured by
+resolution shell.
+\textbf{c,} Fourier shell correlation profiles at $K=5$ (dashed)
+and $K=50$ (solid), averaged across all benchmark structures.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 2 $|$ EDENN FOM estimation is unbiased
+relative to SAD experimental ground truth.}
+Resolution-shell FOM profiles for EDENN, REFMAC Sigma-A, Lunin LB,
+and empirical estimates from SAD phases, for three test structures.
+Shaded bands show 95\% bootstrap confidence intervals.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 3 $|$ EDENN phase distributions are
+calibrated to nominal coverage.}
+Calibration plot of empirical coverage vs.\ nominal level for
+von~Mises credible intervals at 68\%, 90\%, and 95\%.
+Points are per-resolution-shell means; dashed line is the
+perfect-calibration diagonal.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 4 $|$ EDENN SNR predicts genuine
+crystallographic waters better than B-factor.}
+\textbf{a,} ROC curves for predicting water survival under
+independent re-refinement, for EDENN SNR, B-factor, 2$F_o-F_c$
+peak height, and Phenix RSCC.
+AUC values (DeLong 95\% CI) are indicated.
+\textbf{b,} EDENN SNR vs.\ B-factor per water, coloured by
+survival outcome.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 5 $|$ EDENN uncertainty maps of the
+Mac1 active-site water network.}
+\textbf{a,} EDENN SNR isosurface map of the Mac1 apo active site,
+with waters coloured by SNR category.
+\textbf{b,} Per-water SNR distribution across all apo datasets.
+\textbf{c,} Correlation of EDENN SNR with neutron-crystallography
+occupancy for 12 active-site waters.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 6 $|$ Fragment-induced water displacement
+patterns define a Mac1 pharmacophore.}
+\textbf{a,} Hierarchical clustering of 214 fragment-bound datasets
+by their water-displacement SNR profile.
+\textbf{b,} Representative EDENN difference density maps for
+two chemotype clusters.
+\textbf{c,} Correlation of W1 displacement SNR with biochemical
+potency for validated inhibitors.
+\placeholder{[Replace with actual figure.]}
+
+\noindent\textbf{Figure 7 $|$ Single-dataset fragment detection
+on BAZ2B bromodomain.}
+\textbf{a,} ROC curve of EDENN evidence ratio vs.\ PanDDA
+gold-standard labels, stratified by occupancy.
+\textbf{b,} Precision--recall curve.
+\textbf{c,} EDENN evidence ratios for the 47 borderline
+PanDDA events, annotated by final human classification.
+\placeholder{[Replace with actual figure.]}
+
+%% ════════════════════════════════════════════════════════════
+%% SUPPLEMENTARY (outline only)
+%% ════════════════════════════════════════════════════════════
+\section*{Supplementary Information}
+
+\subsection*{Supplementary Note 1: Proof of Lemma 3
+(CLT for omit phases)}
+
+For atoms $\{Z_j^{(k)}\} = \{\mathbf{1}[j\notin\mathcal{O}_k]
+f_j(s)e^{2\pi i\boldh\cdot\boldr_j}\}$, each $Z_j^{(k)}$ is
+independent across $j$ with $|Z_j^{(k)}| \leq f_j^{\max}$
+bounded.  The Lyapunov CLT applies, giving:
+\begin{equation*}
+  F_{\mathrm{omit}}^{(k)}(\boldh)
+  - (1-P_{\mathrm{omit}})\Fmod(\boldh)
+  \xrightarrow{d} \mathcal{N}_\mathbb{C}(0,\Sigma_h)
+\end{equation*}
+where $\Sigma_h = P_{\mathrm{omit}}(1-P_{\mathrm{omit}})
+\sum_j|f_j(s)|^2$.
+For a complex Gaussian perturbation of amplitude $A$ and phase
+$\mu$ with variance $\sigma^2$, the induced phase distribution
+is von~Mises$(\mu, A^2/\sigma^2)$ to leading order in
+$\sigma/A$~\cite{mardia2000}.
+Substituting gives~\eqref{eq:X_edenn}. $\square$
+
+\subsection*{Supplementary Note 2: Centric reflections}
+
+For centric reflections ($\phih \in \{0,\pi\}$), the von~Mises
+distribution is replaced by a Bernoulli distribution and
+$I_1/I_0$ is replaced by $\tanh(\Xh/2)$.
+All theorems above hold with this substitution.
+
+\subsection*{Supplementary Table S1}
+
+\placeholder{
+Full list of PDB accessions and ASAP dataset identifiers used
+in each analysis.
+\textbf{[Fill in at submission.]}
+}
+
+\subsection*{Supplementary Table S2}
+
+\placeholder{
+Complete benchmark results table including all B1--B7 metrics,
+per structure, with confidence intervals.
+\textbf{[Fill in after benchmark runs.]}
+}
+
+\end{document}

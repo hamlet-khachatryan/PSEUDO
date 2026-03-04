@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(pdftoppm:*)",
+      "WebFetch(domain:gemmi.readthedocs.io)",
+      "Bash(pip install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python -c \":*)"
+    ]
+  }
+}
