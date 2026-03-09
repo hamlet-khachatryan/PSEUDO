@@ -36,7 +36,7 @@ def compute_musem(
     if not scores:
         return 0.0
 
-    n = len(scores)
+    # n = len(scores)
     shift = config.ediam_shift
     exponent = config.ediam_exponent
 

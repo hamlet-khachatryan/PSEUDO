@@ -66,7 +66,7 @@ def flag_missing_density(
     config: AggregationConfig,
 ) -> None:
     """
-    Flag atoms where the positive-weight score is below threshold, suggesting that the atom placement is unsupported
+    Flag atoms where the positive-weight score is below the threshold, suggesting that the atom placement is unsupported
 
     Args:
         atom_scores: Per-atom scores whose has_missing_density fields are updated
@@ -105,13 +105,6 @@ def run_diagnostics(
 ) -> None:
     """
     Calls detect_clashes, flag_missing_density, and flag_unaccounted_density
-
-    Args:
-        atom_scores: Per-atom scores to annotate
-        model: gemmi.Model for the scored structure
-        atom_id_to_position: Maps AtomId -> position (3,)
-        atom_id_to_radius: Maps AtomId -> radius used for scoring
-        config: AggregationConfig for threshold values
     """
     detect_clashes(
         atom_scores=atom_scores,
@@ -130,7 +123,6 @@ def summarize_diagnostics(atom_scores: List[AtomScore]) -> Dict[str, int]:
 
     Args:
         atom_scores: Scored atoms
-
     Returns:
         Dict with keys 'n_clashes', 'n_missing_density', 'n_unaccounted_density', 'n_total'.
     """

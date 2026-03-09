@@ -19,16 +19,17 @@ PARAM_TEMPLATES = Path(__file__).parent / "phenix_templates"
 def generate_parameter_files(
     cfg: DebiasConfig, dirs: dict, crystal: Tuple[str, str, str]
 ) -> List[Path]:
-    """Generate parameter files for omit perturbations.
+    """Generate parameter files to omit perturbations.
 
     Args:
         cfg: Module configuration.
         dirs: Dictionary of output directories.
-        crystal: Tuple of structure ID, structure and reflections paths.
+        crystal: Tuple of structure ID, structure, and reflections paths.
     Returns:
         List of generated parameter file paths.
     """
     stem = crystal[0]
+    ext = Path(crystal[1]).suffix.lower()  # ".pdb" or ".cif"
 
     pdb_params = ParameterFile()
     pdb_params.load_from_path(str(PARAM_TEMPLATES / "pdbtools_template.params"))
@@ -39,7 +40,7 @@ def generate_parameter_files(
     param_ready.load_from_path(str(PARAM_TEMPLATES / "ready_set_template.params"))
     param_ready = ParameterFile(PARAM_TEMPLATES / "ready_set_template.params")
 
-    pdb_no_waters = dirs["processed"] / f"{stem}_no_waters.pdb"
+    pdb_no_waters = dirs["processed"] / f"{stem}_no_waters{ext}"
     output_updated = dirs["processed"] / f"{stem}_updated"
 
     param_ready.set("ready_set.input.pdb_file_name", str(pdb_no_waters))
@@ -80,7 +81,7 @@ def generate_parameter_files(
         param_file.load_from_path(str(PARAM_TEMPLATES / "maps_template.params"))
 
         param_file.set(
-            "input.pdb.file_name", str(dirs["processed"] / f"{stem}_updated.pdb")
+            "input.pdb.file_name", str(dirs["processed"] / f"{stem}_updated{ext}")
         )
         param_file.set("input.xray_data.file_name", crystal[2])
         param_file.set("output.file_name", str(job_result_dir / f"{run_id}.mtz"))

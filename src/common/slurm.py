@@ -10,8 +10,8 @@ SBATCH_HEADER = """#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu={mem_per_cpu}
 #SBATCH --time={time}
-#SBATCH --output=%x_%A_%a.out
-#SBATCH --error=%x_%A_%a.err
+#SBATCH --output={logs_dir}/%x_%A_%a.out
+#SBATCH --error={logs_dir}/%x_%A_%a.err
 #SBATCH --array=1-{num_tasks}
 """
 
@@ -76,6 +76,7 @@ def generate_preprocessing_sbatch_content(
         mem_per_cpu=cfg.slurm.mem_per_cpu,
         time=cfg.slurm.time,
         num_tasks=num_tasks,
+        logs_dir=str(dirs["logs"]),
     )
 
     execution = EXECUTION_PREPROCESSING.format(
@@ -90,6 +91,7 @@ def generate_omission_sbatch_content(
     cfg: DebiasConfig,
     manifest_path: Path,
     num_tasks: int,
+    dirs: dict,
 ) -> str:
     """
     Compose the content of a SLURM sbatch script for an array job.
@@ -98,6 +100,7 @@ def generate_omission_sbatch_content(
         cfg: Module configuration.
         manifest_path: Path to the text file containing inputs for each task.
         num_tasks: Number of tasks to run in the array job.
+        dirs: Dictionary of output directories.
     Returns:
         A string containing the complete sbatch script.
     """
@@ -109,6 +112,7 @@ def generate_omission_sbatch_content(
         mem_per_cpu=cfg.slurm.mem_per_cpu,
         time=cfg.slurm.time,
         num_tasks=num_tasks,
+        logs_dir=str(dirs["logs"]),
     )
 
     execution = EXECUTION_OMISSION.format(

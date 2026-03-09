@@ -220,7 +220,7 @@ def _validate_sampler_inputs(
 ):
     """Validate inputs for the stochastic omission sampler."""
     if not Path(structure_path).exists():
-        raise IOError(f"Error: PDB file not found at {structure_path}")
+        raise IOError(f"Error: Structure file not found at {structure_path}")
     if not (0.0 < omit_fraction < 1.0):
         raise ValueError("fraction must be > 0.0 and < 1.0")
     if n_iterations is not None and n_iterations < 1:

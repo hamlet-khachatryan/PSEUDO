@@ -25,7 +25,7 @@ from quantify.api import run_quantification
 @click.option(
     "--k_factor",
     "-k",
-    default=1.5,
+    default=1.0,
     type=float,
     show_default=True,
     help="Radius multiplier coefficient (K) for atom ownership.",
@@ -33,18 +33,27 @@ from quantify.api import run_quantification
 @click.option(
     "--map_cap",
     "-c",
-    default=None,
+    default=50,
     type=int,
     show_default=True,
-    help="Number of maps to use from the ensemble (e.g., 90). Uses maps 0 to N-1.",
+    help="Number of maps to use from the ensemble. Uses maps 0 to N-1.",
 )
-def quantify_cli(input_path, stem, force, k_factor, map_cap):
+@click.option(
+    "--num_processes",
+    "-n",
+    default=1,
+    type=int,
+    show_default=True,
+    help="Number of parallel processes for screening mode (multiple experiments).",
+)
+def quantify_cli(input_path, stem, force, k_factor, map_cap, num_processes):
     """
     Quantify Omission Ensembles.
     Generates Signal, Noise, and SNR maps using robust matrix subtraction.
+    Automatically detects single-structure or screening (multi-structure) input.
     """
     try:
-        run_quantification(input_path, stem, force, k_factor, map_cap)
+        run_quantification(input_path, stem, force, k_factor, map_cap, num_processes)
     except Exception as e:
         click.echo(f"Error: {e}")
         raise e

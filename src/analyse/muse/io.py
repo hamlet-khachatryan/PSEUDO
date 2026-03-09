@@ -14,12 +14,9 @@ def load_map(map_path: str) -> gemmi.FloatGrid:
     Load a CCP4/MRC format map file and return the grid
 
     Args:
-        map_path: Path to the CCP4 (.ccp4, .map, .mrc) format map file
+        map_path: Path to the CCP4 format map file
     Returns:
-        A gemmi.FloatGrid ready for value interpolation
-    Raises:
-        FileNotFoundError: If map_path does not exist
-        RuntimeError: If the file cannot be parsed as a CCP4 map
+        A gemmi.FloatGrid
     """
     path = Path(map_path)
     if not path.exists():
@@ -38,9 +35,6 @@ def load_structure(structure_path: str) -> gemmi.Structure:
         structure_path: Path to the coordinate file
     Returns:
         A gemmi.Structure object
-    Raises:
-        FileNotFoundError: If structure_path does not exist
-        RuntimeError: If the file cannot be parsed
     """
     path = Path(structure_path)
     if not path.exists():
@@ -67,7 +61,7 @@ def compute_map_statistics(
         grid: The map grid
         config: Normalization configuration with optional overrides
     Returns:
-        Tuple of (mean, sigma)
+        Tuple of mean and sigma
     """
     if config.global_mean_override is not None:
         mean = config.global_mean_override

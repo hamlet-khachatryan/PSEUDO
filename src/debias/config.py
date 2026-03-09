@@ -26,14 +26,16 @@ class DebiasParams:
     """Parameters specific to the Debias module."""
 
     run_name: str
-    omit_type: Literal["amino_acids", "atoms"] = "amino_acids"
+    omit_type: Literal["amino_acids", "atoms"] = "atoms"
     omit_fraction: float = 0.1
     iterations: int = 5
     always_omit: Optional[str] = None
-    seed: Optional[int] = None
+    seed: Optional[int] = 42
     structure_path: Optional[str] = None
     reflections_path: Optional[str] = None
     screening_path: Optional[str] = None
+    sqlite_outcomes: Optional[str] = None  # specific for DLS XChem screening data
+    max_structures: Optional[int] = None # specific for DLS XChem screening data
 
 
 @dataclass

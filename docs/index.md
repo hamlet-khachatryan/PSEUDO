@@ -37,6 +37,10 @@ debias:
   run_name: "my_experiment"
   structure_path: "/data/target.pdb"
   reflections_path: "/data/target.mtz"
+  omit_type: "atoms"
+  omit_fraction: 0.1
+  iterations: 5
+  seed: 42
 
 paths:
   work_dir: "/scratch/my_project"
@@ -63,7 +67,7 @@ PSEUDO accepts three input modes for the debias stage:
 
 `sqlite_outcomes` — comma-separated substrings matched against the `RefinementOutcome` column. Accepted values:
 
-```
+```text
 Analysis Pending, PANDDA model - minor, In Refinement,
 CompChem ready, Deposition ready, Deposited, Analysed & Rejected
 ```

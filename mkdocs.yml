@@ -1,0 +1,35 @@
+site_name: PSEUDO
+site_description: >
+  Computational framework for debiasing and uncertainty quantification
+  in protein structural models resolved by molecular replacement.
+
+repo_url: https://github.com/hamlet-khachatryan/PSEUDO
+repo_name: hamlet-khachatryan/PSEUDO
+
+copyright: "Copyright &copy; 2026 Hamlet Khachatryan, Conor Wild, Frank von Delft."
+
+docs_dir: docs
+
+theme:
+  name: mkdocs
+  custom_dir: docs/theme
+
+nav:
+  - Home: index.md
+  - Guides:
+    - Debias: guides/debias.md
+    - Quantify: guides/quantify.md
+    - Analyse: guides/analyse.md
+  - API Reference: api.md
+  - Configuration Reference: reference.md
+
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: true
+      guess_lang: false
+  - pymdownx.superfences
+  - pymdownx.inlinehilite

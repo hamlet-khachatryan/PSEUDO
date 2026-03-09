@@ -260,10 +260,6 @@ def get_atom_radius(
 
     Returns:
         Interpolated radius
-
-    Raises:
-        KeyError: If the element/charge combination is not in the table
-            and no neutral fallback exists
     """
     table = radii_table if radii_table is not None else RADII_TABLE
 
@@ -282,7 +278,7 @@ def get_default_radius(
     resolution: float,
 ) -> float:
     """
-    Fallback radius for elements not in the radii table.
+    Fallback radius for elements not in the radii table
 
     Uses the gemmi covalent radius as a base estimate and scales it
     by a resolution-dependent factor derived from the behavior of
@@ -312,7 +308,7 @@ def _interpolate_radius(radii: List[float], resolution: float) -> float:
     Linearly interpolate a radius value between resolution breakpoints
 
     Args:
-        radii: List of 6 radius values at the standard breakpoints.
+        radii: List of 6 radius values at the standard breakpoints
         resolution: Target resolution
     Returns:
         Interpolated radius value

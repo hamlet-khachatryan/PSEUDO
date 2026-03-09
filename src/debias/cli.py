@@ -15,15 +15,14 @@ def debias_cli():
     help="Path to external YAML configuration file.",
 )
 @click.option("--run_name", type=str, help="Run name.")
-@click.option("--structure_path", type=click.Path(exists=True), help="Input PDB path.")
+@click.option("--structure_path", type=click.Path(exists=True), help="Input structure path (.pdb or .cif).")
 @click.option(
     "--reflections_path", type=click.Path(exists=True), help="Input MTZ path."
 )
 @click.option(
     "--screening_path",
     type=click.Path(exists=True),
-    help="Path to the screening file. CSV with 'PDB' and 'MTZ' column names. SoakDB sql file for the Diamond XChem "
-    "Data with structure status label for filtration.",
+    help="Path to the screening file. CSV with 'PDB' and 'MTZ' column names. SoakDB sql file for the DLS XChem Data.",
 )
 @click.option("--work_dir", type=click.Path(exists=True), help="Working directory.")
 # Omission Parameters
@@ -45,6 +44,27 @@ def debias_cli():
 )
 @click.option("--iterations", type=int, help="Number of omission iterations.")
 @click.option("--seed", type=int, help="Random seed for reproducibility.")
+# SQLite screening options
+@click.option(
+    "--sqlite_outcomes",
+    type=str,
+    default=None,
+    help=(
+        "Comma-separated substrings to match against RefinementOutcome in SoakDB SQLite files. "
+        "Accepted values: 'CompChem ready', 'Deposition ready', 'Deposited', 'Analysed & Rejected'."
+        "No effect on CSV input. Defaults to no filtering (all structures included)."
+    ),
+)
+@click.option(
+    "--max_structures",
+    type=int,
+    default=None,
+    help=(
+        "Maximum number of structures to process from a SQLite file. "
+        "No effect on CSV or single-structure input. "
+        "Defaults to no cap (all matching structures processed)."
+    ),
+)
 # SLURM Resources
 @click.option("--partition", type=str, help="SLURM partition to use.")
 @click.option("--cpus_per_task", type=int, help="SLURM CPUs per task.")
@@ -66,6 +86,8 @@ def generate_params(
     always_omit,
     iterations,
     seed,
+    sqlite_outcomes,
+    max_structures,
     partition,
     cpus_per_task,
     mem_per_cpu,
@@ -99,6 +121,11 @@ def generate_params(
         overrides.append(f"debias.iterations={iterations}")
     if seed is not None:
         overrides.append(f"debias.seed={seed}")
+
+    if sqlite_outcomes:
+        overrides.append(f"debias.sqlite_outcomes={sqlite_outcomes}")
+    if max_structures is not None:
+        overrides.append(f"debias.max_structures={max_structures}")
 
     if partition:
         overrides.append(f"slurm.partition={partition}")

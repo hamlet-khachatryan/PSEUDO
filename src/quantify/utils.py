@@ -40,12 +40,21 @@ def read_mtz(mtz_path: Path | str) -> gemmi.Ccp4Map:
     return ref_map
 
 
+def _detect_model_ext(processed_dir: Path, stem: str) -> str:
+    """Return the extension (.pdb or .cif) of the updated model, defaulting to .pdb."""
+    for ext in (".pdb", ".cif"):
+        if (processed_dir / f"{stem}_updated{ext}").exists():
+            return ext
+    return ".pdb"
+
+
 def get_experiment_paths(root_dir: Path, stem: str) -> Dict[str, Path]:
     root_dir = Path(root_dir)
+    ext = _detect_model_ext(root_dir / "processed", stem)
     return {
         "root": root_dir,
-        "processed_pdb": root_dir / "processed" / f"{stem}_updated.pdb",
-        "original_pdb": root_dir / "processed" / f"{stem}_original.pdb",
+        "processed_pdb": root_dir / "processed" / f"{stem}_updated{ext}",
+        "original_pdb": root_dir / "processed" / f"{stem}_original{ext}",
         "omission_json": root_dir / "metadata" / f"{stem}_omission_map.json",
         "metadata_dir": root_dir / "metadata",
         "results_dir": root_dir / "results",
@@ -59,9 +68,10 @@ def validate_experiment(paths: Dict[str, Path]) -> bool:
 
 def infer_stem(processed_dir: Path) -> Optional[str]:
     try:
-        files = list(processed_dir.glob("*_updated.pdb"))
-        if files:
-            return files[0].name.replace("_updated.pdb", "")
+        for suffix in ("_updated.pdb", "_updated.cif"):
+            files = list(processed_dir.glob(f"*{suffix}"))
+            if files:
+                return files[0].name[: -len(suffix)]
         return None
     except Exception:
         return None

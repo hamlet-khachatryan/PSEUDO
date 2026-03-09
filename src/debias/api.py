@@ -9,6 +9,9 @@ from omegaconf import OmegaConf
 import sqlite3
 import pandas as pd
 
+import eliot
+
+from common.logging import setup_eliot_logging
 from debias.config import DebiasConfig
 from debias.parameter_generator import generate_parameter_files
 from common.slurm import (
@@ -17,7 +20,6 @@ from common.slurm import (
 )
 
 CONF_PATH = Path(__file__).parent.parent / "conf"
-QUERY_SQLITE_DIAMOND = "(RefinementOutcome == '4 - CompChem ready') or (RefinementOutcome == '5 - Deposition ready') or (RefinementOutcome == '6 - Deposited')"
 
 
 def load_debias_config(
@@ -117,23 +119,26 @@ def run_debias_generation(
     generate_slurm_job(cfg)
 
 
+def _discover_crystals(cfg: DebiasConfig) -> list:
+    """Discover (ID, pdb, mtz) tuples from structure_path or screening_path."""
+    if cfg.debias.structure_path and cfg.debias.reflections_path:
+        return [(
+            Path(cfg.debias.structure_path).stem,
+            cfg.debias.structure_path,
+            cfg.debias.reflections_path,
+        )]
+    return list(_screening_exploration(
+        cfg.debias.screening_path,
+            cfg.debias.sqlite_outcomes,
+        cfg.debias.max_structures,
+    ))
+
+
 def _setup_debias_directories(
     cfg: DebiasConfig,
-) -> tuple[dict[str, Path], list[Any], list[Any]]:
-    """Create directory structure for the run."""
-
-    crystals = []
-
-    if cfg.debias.structure_path and cfg.debias.reflections_path:
-        crystals.append(
-            (
-                Path(cfg.debias.structure_path).stem,
-                cfg.debias.structure_path,
-                cfg.debias.reflections_path,
-            )
-        )
-    elif cfg.debias.screening_path:
-        crystals.extend(_screening_exploration(cfg.debias.screening_path))
+    crystals: list,
+) -> tuple[dict[str, Path], list[Any]]:
+    """Create a directory structure for the run."""
 
     base = Path(cfg.paths.work_dir) / cfg.debias.run_name
 
@@ -160,50 +165,82 @@ def _setup_debias_directories(
         params_c = generate_parameter_files(cfg, nested, crystal)
         all_omit_params.extend(params_c)
 
-    return dirs, crystals, all_omit_params
+    return dirs, all_omit_params
 
 
 def generate_slurm_job(cfg: DebiasConfig):
     """
     Generate SLURM scripts and manifests for cluster submission.
     """
-    dirs, crystals, omit_params = _setup_debias_directories(cfg)
+    log_dir = Path(cfg.paths.work_dir) / cfg.debias.run_name / "logs" / "eliot"
+    setup_eliot_logging(log_dir, cfg.debias.run_name)
 
-    pre_manifest = dirs["sbatch"] / "preprocessing_manifest.txt"
-    omit_manifest = dirs["sbatch"] / "omit_manifest.txt"
+    with eliot.start_action(
+        action_type="debias:generate_slurm_job",
+        run_name=cfg.debias.run_name,
+        work_dir=str(cfg.paths.work_dir),
+        omit_type=cfg.debias.omit_type,
+        omit_fraction=cfg.debias.omit_fraction,
+        iterations=cfg.debias.iterations,
+    ):
+        crystals = _discover_crystals(cfg)
+        click.echo(f"Found {len(crystals)} structure(s) to process.")
+        eliot.log_message(
+            message_type="debias:structures_found",
+            n_structures=len(crystals),
+        )
 
-    with open(pre_manifest, "w") as f:
-        for crystal in crystals:
-            f.write(f"{crystal[0]}|{crystal[1]}|{crystal[2]}\n")
+        dirs, omit_params = _setup_debias_directories(cfg, crystals)
 
-    with open(omit_manifest, "w") as f:
-        for param_file in omit_params:
-            f.write(f"{param_file}\n")
+        eliot.log_message(
+            message_type="debias:setup_complete",
+            n_crystals=len(crystals),
+            n_omit_params=len(omit_params),
+            sbatch_dir=str(dirs["sbatch"]),
+        )
 
-    content_preprocessing = generate_preprocessing_sbatch_content(
-        cfg=cfg,
-        manifest_path=pre_manifest,
-        num_tasks=len(crystals),
-        dirs=dirs,
-    )
+        pre_manifest = dirs["sbatch"] / "preprocessing_manifest.txt"
+        omit_manifest = dirs["sbatch"] / "omit_manifest.txt"
 
-    content_omission = generate_omission_sbatch_content(
-        cfg=cfg,
-        manifest_path=omit_manifest,
-        num_tasks=len(omit_params),
-    )
+        with open(pre_manifest, "w") as f:
+            for crystal in crystals:
+                f.write(f"{crystal[0]}|{crystal[1]}|{crystal[2]}\n")
 
-    out_script_preprocessing = dirs["sbatch"] / "submit_preprocessing.slurm"
-    out_script_omission = dirs["sbatch"] / "submit_omission.slurm"
+        with open(omit_manifest, "w") as f:
+            for param_file in omit_params:
+                f.write(f"{param_file}\n")
 
-    with open(out_script_preprocessing, "w") as f:
-        f.write(content_preprocessing)
+        content_preprocessing = generate_preprocessing_sbatch_content(
+            cfg=cfg,
+            manifest_path=pre_manifest,
+            num_tasks=len(crystals),
+            dirs=dirs,
+        )
 
-    with open(out_script_omission, "w") as f:
-        f.write(content_omission)
+        content_omission = generate_omission_sbatch_content(
+            cfg=cfg,
+            manifest_path=omit_manifest,
+            num_tasks=len(omit_params),
+            dirs=dirs,
+        )
 
-    out_script_preprocessing.chmod(0o755)
-    out_script_omission.chmod(0o755)
+        out_script_preprocessing = dirs["sbatch"] / "submit_preprocessing.slurm"
+        out_script_omission = dirs["sbatch"] / "submit_omission.slurm"
+
+        with open(out_script_preprocessing, "w") as f:
+            f.write(content_preprocessing)
+
+        with open(out_script_omission, "w") as f:
+            f.write(content_omission)
+
+        out_script_preprocessing.chmod(0o755)
+        out_script_omission.chmod(0o755)
+
+        eliot.log_message(
+            message_type="debias:scripts_written",
+            preprocessing_script=str(out_script_preprocessing),
+            omission_script=str(out_script_omission),
+        )
 
     click.echo(f"SLURM submission files generated at: {dirs['sbatch']}")
     click.echo(
@@ -211,31 +248,45 @@ def generate_slurm_job(cfg: DebiasConfig):
     )
 
 
-def _screening_exploration(screening_path: str):
-    """Analyze the input screening results file and extract relevant PDB and MTZ file pairs.
+def _screening_exploration(
+    screening_path: str,
+    outcomes: Optional[str] = None,
+    max_structures: Optional[int] = None,
+):
+    """Extract PDB/MTZ pairs from a CSV or Diamond SoakDB SQLite file.
 
-    The extraction depends on the file format (CSV or SQLite database).
-    The function supports CSV files containing two specific columns ('PDB', 'MTZ')
-    and SQLite databases with a predefined query structure corresponding to Diamond
-    soakdb files.
+    CSV input always processes all rows. SQLite input supports optional
+    outcome filtering and structure count capping.
 
-    Args:
-        screening_path (str): Path to the screening file (CSV or SQLite).
-
-    Returns:
-        List[Tuple[str, str]]: A list of tuples, where each tuple contains the path to a PDB file
-            and the path to the corresponding MTZ file.
+    outcomes: comma-separated string matched against RefinementOutcome, e.g.
+        "CompChem ready, Deposition ready, Deposited"
+    Accepted values:
+        "Analysis Pending", "PANDDA model - minor", "In Refinement",
+        "CompChem ready", "Deposition ready", "Deposited", "Analysed & Rejected"
     """
     # TODO Implement screening exploration logic based on XCA output file structure
     screening_items = []
 
     if screening_path.endswith(".csv"):
         df = pd.read_csv(screening_path)
-        df["ID"] = df["PDB"].map(lambda x: Path(x).stem)
-        screening_items = list(zip(df["ID"], df["PDB"], df["MTZ"]))
+        struct_col = next(
+            (c for c in ["PDB", "CIF", "structure"] if c in df.columns), None
+        )
+        if struct_col is None:
+            raise ValueError(
+                "CSV must contain a 'PDB', 'CIF', or 'structure' column"
+            )
+        df["ID"] = df[struct_col].map(lambda x: Path(x).stem)
+        screening_items = list(zip(df["ID"], df[struct_col], df["MTZ"]))
 
     if screening_path.endswith(".sqlite"):
-        df = _sqlite_as_dataframe(screening_path).query(QUERY_SQLITE_DIAMOND)
+        df = _sqlite_as_dataframe(screening_path)
+
+        if outcomes:
+            outcome_list = [o.strip() for o in outcomes.split(",")]
+            mask = df["RefinementOutcome"].str.contains("|".join(outcome_list), na=False)
+            df = df[mask]
+            print(f"Outcome filter {outcome_list}: {len(df)} structure(s) retained.")
 
         ref_pairs = df[
             ["CrystalName", "RefinementPDB_latest", "RefinementMTZ_latest"]
@@ -249,14 +300,21 @@ def _screening_exploration(screening_path: str):
 
         final_pairs = ref_pairs.combine_first(dimple_pairs)
 
-        screening_items.extend(
-            zip(final_pairs["ID"], final_pairs["PDB"], final_pairs["MTZ"])
-        )
-
         if len(final_pairs) < len(df):
             print(
                 f"Skipped {len(df) - len(final_pairs)} datasets: No complete PDB/MTZ pair found."
             )
+
+        if max_structures is not None and len(final_pairs) > max_structures:
+            print(
+                f"Capping SQLite results from {len(final_pairs)} to {max_structures} structures."
+            )
+            final_pairs = final_pairs.iloc[:max_structures]
+
+        screening_items.extend(
+            zip(final_pairs["ID"], final_pairs["PDB"], final_pairs["MTZ"])
+        )
+
     return screening_items
 
 

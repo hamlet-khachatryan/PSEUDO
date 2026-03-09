@@ -57,9 +57,6 @@ def enumerate_grid_points_in_sphere(
     """
     Enumerate all grid points within a sphere and return positions + values
 
-    For efficiency, first computes a bounding box in fractional coordinates,
-    then iterates only over grid indices within that box
-
     Args:
         grid: The CCP4 map grid
         center: Center of the sphere (atom position)
@@ -127,7 +124,7 @@ def compute_distances(
     center: np.ndarray,
 ) -> np.ndarray:
     """
-    Compute  distances from each position to a center point
+    Compute distances from each position to a center point
 
     Args:
         positions: ndarray of shape (N, 3) point coordinates

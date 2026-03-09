@@ -1,12 +1,6 @@
 """
 Grid point ownership logic for covalently connected atoms.
 
-The 4-case decision tree:
-    1. a in S(p) and sole non-covalent atom in S(p) -> o = 1.0
-    2. a in S(p) and multiple non-covalent atoms in S(p) -> distance sharing
-    3. a in D(p) and S(p) is non-empty -> o = 0.0
-    4. a in D(p) and S(p) is empty -> shared among D(p) atoms
-
 References:
     - Meyder et al. (2017) J. Chem. Inf. Model. 57, 2437-2447
     - Nittinger et al. (2015) J. Chem. Inf. Model. 55, 771-783
@@ -32,7 +26,7 @@ def find_covalent_neighbors(
 
     Args:
         model: A gemmi.Model
-        tolerance: Distance tolerance added to the sum of covalent radii. Default 0.4 A
+        tolerance: Distance tolerance. Default 0.4 A
 
     Returns:
         Dict mapping each atom's AtomId to a list of bonded atom AtomIds
@@ -156,19 +150,18 @@ def compute_ownership(
     covalent_neighbors: Dict[AtomId, List[AtomId]],
 ) -> float:
     """
-    Compute ownership factor o(p, a) for one grid point and one atom
+    Compute ownership factor for one grid point and one atom
 
     Args:
-        distances_to_atoms: Dict mapping each nearby AtomId to the distance
-            from the grid point to that atom's center
-        scored_atom: The AtomId being scored
+        distances_to_atoms: Dict mapping each nearby AtomId to the distance from the grid point
+        scored_atom: AtomId
         atom_radii: Dict mapping each AtomId to its electron density radius
-        covalent_neighbors: Bond adjacency from find_covalent_neighbors
+        covalent_neighbors: Bond adjacency
     Returns:
         Ownership fraction in [0.0, 1.0]
     """
     a = scored_atom
-    r_a = atom_radii.get(a, 0.0)
+    # r_a = atom_radii.get(a, 0.0)
     dist_a = distances_to_atoms.get(a, float("inf"))
 
     s_p: Set[AtomId] = set()
@@ -185,8 +178,7 @@ def compute_ownership(
 
     # Case: a is in S(p) (grid point is inside a's inner sphere)
     if a in s_p:
-        # I(p, a) = S(p) minus atoms covalently bonded to a
-        # (but includes a itself)
+        # I(p, a) = S(p) minus atoms covalently bonded to a (but includes a itself)
         i_p_a = s_p - cov_of_a
         if len(i_p_a) <= 1:
             return 1.0
@@ -212,7 +204,7 @@ def _share_by_distance(
     Share ownership among atoms based on inverse distance
 
     Args:
-        dist_a: Distance from grid point to atom a
+        dist_a: Distance from grid point to atom
         atom_set: Set of atoms sharing this grid point
         distances: Distance from grid point to each atom
 
@@ -241,8 +233,7 @@ def compute_ownership_vectorized(
     Compute ownership for all grid points of one atom at once
 
     Args:
-        grid_distances_to_scored: (N,) array of distances from each grid
-            point to the scored atom
+        grid_distances_to_scored: (N,) array of distances from each grid point to the scored atom
         grid_point_positions: (N, 3) array of grid point positions
         scored_atom_id: The AtomId being scored
         scored_atom_radius: Radius of the scored atom
