@@ -10,7 +10,7 @@ from omegaconf import OmegaConf
 class SlurmResources:
     job_name: str = "debias_job"
     partition: str = "cs05r"
-    time: str = "10-00:00:00"
+    time: str = "3-00:00:00"
     mem_per_cpu: str = "1024"
     cpus_per_task: int = 1
     num_nodes: int = 3
@@ -36,6 +36,7 @@ class DebiasParams:
     screening_path: Optional[str] = None
     sqlite_outcomes: Optional[str] = None  # specific for DLS XChem screening data
     max_structures: Optional[int] = None # specific for DLS XChem screening data
+    screening_chunk_size: int = 1000  # max omission jobs per sbatch array submission
 
 
 @dataclass

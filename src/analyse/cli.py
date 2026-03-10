@@ -72,7 +72,7 @@ from analyse.api import run_analysis
 def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap, num_processes, significance_alpha):
     """
     Run MUSE density-support analysis on debiased, quantified structure(s).
-    For each experiment, scores every heavy atom against the SNR map,
+    For each experiment, scores every heavy atom against the STOMP-SNR map,
     and writes to analyse_results/ in each experiment directory:
 
     \b

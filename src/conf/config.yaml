@@ -24,3 +24,4 @@ debias:
   screening_path: null
   max_structures: null
   sqlite_outcomes: null
+  screening_chunk_size: 1000

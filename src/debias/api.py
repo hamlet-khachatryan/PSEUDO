@@ -192,21 +192,27 @@ def generate_slurm_job(cfg: DebiasConfig):
 
         dirs, omit_params = _setup_debias_directories(cfg, crystals)
 
+        chunk_size = cfg.debias.screening_chunk_size
+        n_chunks = max(1, (len(omit_params) + chunk_size - 1) // chunk_size)
+
         eliot.log_message(
             message_type="debias:setup_complete",
             n_crystals=len(crystals),
             n_omit_params=len(omit_params),
+            screening_chunk_size=chunk_size,
+            n_omission_chunks=n_chunks,
             sbatch_dir=str(dirs["sbatch"]),
         )
 
+        # Preprocessing: single manifest and script (one job per crystal, always manageable)
         pre_manifest = dirs["sbatch"] / "preprocessing_manifest.txt"
-        omit_manifest = dirs["sbatch"] / "omit_manifest.txt"
-
         with open(pre_manifest, "w") as f:
             for crystal in crystals:
                 f.write(f"{crystal[0]}|{crystal[1]}|{crystal[2]}\n")
 
-        with open(omit_manifest, "w") as f:
+        # Full omit manifest kept for reference
+        omit_manifest_full = dirs["sbatch"] / "omit_manifest.txt"
+        with open(omit_manifest_full, "w") as f:
             for param_file in omit_params:
                 f.write(f"{param_file}\n")
 
@@ -216,36 +222,54 @@ def generate_slurm_job(cfg: DebiasConfig):
             num_tasks=len(crystals),
             dirs=dirs,
         )
-
-        content_omission = generate_omission_sbatch_content(
-            cfg=cfg,
-            manifest_path=omit_manifest,
-            num_tasks=len(omit_params),
-            dirs=dirs,
-        )
-
         out_script_preprocessing = dirs["sbatch"] / "submit_preprocessing.slurm"
-        out_script_omission = dirs["sbatch"] / "submit_omission.slurm"
-
         with open(out_script_preprocessing, "w") as f:
             f.write(content_preprocessing)
-
-        with open(out_script_omission, "w") as f:
-            f.write(content_omission)
-
         out_script_preprocessing.chmod(0o755)
-        out_script_omission.chmod(0o755)
+
+        # Omission: split into chunks, one sbatch script per chunk
+        omission_scripts = []
+        chunks = [omit_params[i:i + chunk_size] for i in range(0, len(omit_params), chunk_size)]
+        for i, chunk in enumerate(chunks):
+            suffix = f"_{i}" if n_chunks > 1 else ""
+            chunk_manifest = dirs["sbatch"] / f"omit_manifest{suffix}.txt"
+            with open(chunk_manifest, "w") as f:
+                for param_file in chunk:
+                    f.write(f"{param_file}\n")
+
+            content_omission = generate_omission_sbatch_content(
+                cfg=cfg,
+                manifest_path=chunk_manifest,
+                num_tasks=len(chunk),
+                dirs=dirs,
+            )
+            out_script_omission = dirs["sbatch"] / f"submit_omission{suffix}.slurm"
+            with open(out_script_omission, "w") as f:
+                f.write(content_omission)
+            out_script_omission.chmod(0o755)
+            omission_scripts.append(out_script_omission)
 
         eliot.log_message(
             message_type="debias:scripts_written",
             preprocessing_script=str(out_script_preprocessing),
-            omission_script=str(out_script_omission),
+            omission_scripts=[str(s) for s in omission_scripts],
+        )
+
+        # Build chained submission command
+        submission_lines = [f"jid=$(sbatch --parsable {out_script_preprocessing})"]
+        for script in omission_scripts:
+            submission_lines.append(
+                f"jid=$(sbatch --parsable --dependency=afterok:$jid {script})"
+            )
+        submission_cmd = "\n".join(submission_lines)
+
+        eliot.log_message(
+            message_type="debias:submission_command",
+            submission_command=submission_cmd,
         )
 
     click.echo(f"SLURM submission files generated at: {dirs['sbatch']}")
-    click.echo(
-        f"Run : jid=$(sbatch --parsable {out_script_preprocessing}) && sbatch --dependency=afterok:$jid {out_script_omission}"
-    )
+    click.echo(f"Run:\n{submission_cmd}")
 
 
 def _screening_exploration(

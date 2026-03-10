@@ -65,6 +65,16 @@ def debias_cli():
         "Defaults to no cap (all matching structures processed)."
     ),
 )
+@click.option(
+    "--screening_chunk_size",
+    type=int,
+    default=None,
+    help=(
+        "Maximum number of omission jobs per sbatch array submission. "
+        "Omission jobs are chunked and submitted sequentially to avoid flooding the scheduler. "
+        "Defaults to 1000."
+    ),
+)
 # SLURM Resources
 @click.option("--partition", type=str, help="SLURM partition to use.")
 @click.option("--cpus_per_task", type=int, help="SLURM CPUs per task.")
@@ -88,6 +98,7 @@ def generate_params(
     seed,
     sqlite_outcomes,
     max_structures,
+    screening_chunk_size,
     partition,
     cpus_per_task,
     mem_per_cpu,
@@ -126,6 +137,8 @@ def generate_params(
         overrides.append(f"debias.sqlite_outcomes={sqlite_outcomes}")
     if max_structures is not None:
         overrides.append(f"debias.max_structures={max_structures}")
+    if screening_chunk_size is not None:
+        overrides.append(f"debias.screening_chunk_size={screening_chunk_size}")
 
     if partition:
         overrides.append(f"slurm.partition={partition}")
