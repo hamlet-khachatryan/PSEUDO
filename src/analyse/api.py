@@ -71,11 +71,11 @@ def _resolve_map_path(paths: dict, k_factor: float, map_cap: Optional[int]) -> P
 
 
 def _resolve_model_path(paths: dict) -> Path:
-    """Return the processed model path"""
-    model_path = paths["processed_pdb"]
+    """Return the original model path"""
+    model_path = paths["original_pdb"]
     if not model_path.exists():
         raise FileNotFoundError(
-            f"Processed model not found at {model_path}. "
+            f"Original model not found at {model_path}. "
             "Run 'pseudo-debias' first to generate the processed structure."
         )
     return model_path
