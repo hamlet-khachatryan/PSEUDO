@@ -78,6 +78,7 @@ def run_debias_generation(
     slurm_cpus_per_task: Optional[int] = None,
     slurm_mem_per_cpu: Optional[str] = None,
     slurm_num_nodes: Optional[int] = None,
+    force: bool = False,
 ):
     """
     API to generate debias SLURM jobs with explicit parameters.
@@ -122,7 +123,7 @@ def run_debias_generation(
         overrides.append(f"slurm.num_nodes={slurm_num_nodes}")
 
     cfg = load_debias_config(config_path=config_path, overrides=overrides)
-    generate_slurm_job(cfg)
+    generate_slurm_job(cfg, force=force)
 
 
 def _discover_crystals(cfg: DebiasConfig) -> list:
@@ -176,7 +177,7 @@ def _setup_debias_directories(
     return dirs, all_omit_params
 
 
-def generate_slurm_job(cfg: DebiasConfig):
+def generate_slurm_job(cfg: DebiasConfig, force: bool = False):
     """
     Generate SLURM scripts and manifests for cluster submission
     """
@@ -192,6 +193,33 @@ def generate_slurm_job(cfg: DebiasConfig):
         iterations=cfg.debias.iterations,
     ):
         crystals = _discover_crystals(cfg)
+
+        if not force:
+            base = Path(cfg.paths.work_dir) / cfg.debias.run_name
+            remaining, skipped = [], []
+            for crystal in crystals:
+                stem = crystal[0]
+                first_map = base / stem / "results" / f"{stem}_0" / f"{stem}_0.mtz"
+                if first_map.exists():
+                    skipped.append(stem)
+                else:
+                    remaining.append(crystal)
+            if skipped:
+                click.echo(
+                    f"Skipping {len(skipped)} crystal(s) with existing results. "
+                    "Use --force to regenerate."
+                )
+                eliot.log_message(
+                    message_type="debias:crystals_skipped",
+                    n_skipped=len(skipped),
+                    skipped=skipped,
+                )
+            crystals = remaining
+
+        if not crystals:
+            click.echo("All crystals already have results. Use --force to regenerate.")
+            return
+
         click.echo(f"Found {len(crystals)} structure(s) to process.")
         eliot.log_message(
             message_type="debias:structures_found",

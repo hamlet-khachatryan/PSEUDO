@@ -257,7 +257,6 @@ def run_analysis(
     input_path = Path(input_path)
 
     if stem:
-        # Explicit stem: single experiment at input_path.
         paths = get_experiment_paths(input_path, stem)
         paths["stem"] = stem
         _analyse_single(paths, map_path, model_path, k_factor, map_cap, significance_alpha)

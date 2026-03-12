@@ -53,7 +53,7 @@
     scattering_table = wk1995 it1992 *n_gaussian neutron electron
     wavelength = None
     energy = None
-    use_experimental_phases = Auto
+    use_experimental_phases = False
     twin_law = Auto
   }
   output {

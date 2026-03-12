@@ -234,6 +234,21 @@ debias:
 
 ---
 
+## Re-run behaviour
+
+By default, crystals whose first perturbation map (`results/<stem>_0/<stem>_0.mtz`) already exists are skipped. Pass `--force` / `-f` or set `debias.force: true` in YAML to regenerate everything:
+
+```bash
+pseudo-debias generate-params --config run.yaml --force
+```
+
+```yaml
+debias:
+  force: true
+```
+
+---
+
 ## Parameter reference
 
 See [Configuration Reference — Debias](../reference.md#debias-pseudo-debias).

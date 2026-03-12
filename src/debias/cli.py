@@ -100,6 +100,12 @@ def debias_cli():
     type=int,
     help="Number of nodes to use for the preprocessing and omission steps.",
 )
+@click.option(
+    "--force", "-f",
+    is_flag=True,
+    default=False,
+    help="Regenerate params and SLURM scripts even for crystals that already have perturbation results.",
+)
 def generate_params(
     config,
     run_name,
@@ -121,6 +127,7 @@ def generate_params(
     cpus_per_task,
     mem_per_cpu,
     num_nodes,
+    force,
 ):
     """
     Generate SLURM job files for the Debias pipeline.
@@ -170,6 +177,8 @@ def generate_params(
         overrides.append(f"slurm.mem_per_cpu={mem_per_cpu}")
     if num_nodes:
         overrides.append(f"slurm.num_nodes={num_nodes}")
+    if force:
+        overrides.append("debias.force=true")
 
     try:
         cfg = load_debias_config(config_path=config, overrides=overrides)
@@ -177,4 +186,4 @@ def generate_params(
         click.echo(f"Configuration Error: {e}", err=True)
         return
 
-    generate_slurm_job(cfg)
+    generate_slurm_job(cfg, force=cfg.debias.force)
