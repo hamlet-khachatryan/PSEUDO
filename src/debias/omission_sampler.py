@@ -31,17 +31,14 @@ def extract_ids(
     structure_path: Path | str, mode: Literal["atoms", "amino_acids"]
 ) -> Union[List[AtomID], List[AminoID]]:
     """
-    Extract unique atom or amino-acid IDs from a protein structure.
+    Extract unique atom or amino-acid IDs from a protein structure
 
     Args:
         structure_path: Path to the structure file (e.g., .pdb, .cif).
         mode: 'atoms' to extract AtomIDs, 'amino_acids' to extract AminoIDs.
 
     Returns:
-        A list of unique IDs (tuples) based on the selected mode.
-
-    Raises:
-        ValueError: If an invalid mode is somehow provided.
+        A list of unique IDs (tuples) based on the selected mode
     """
 
     structure = gemmi.read_structure(str(structure_path))
@@ -79,14 +76,20 @@ def extract_ids(
 
 
 def _order_preserving_dedupe(items: Sequence[object]) -> List[object]:
-    """Return items with duplicates removed but preserve first-seen order."""
+    """
+    Return items with duplicates removed but preserve first-seen order
+    """
+
     return list(dict.fromkeys(items))
 
 
 def _apply_always_omit_selectors(
     all_ids: Sequence["AnyID"], always_omit: Optional[str] = None
 ):
-    """Return (selectors_in_structure, remaining_pool) preserving order of remaining_pool."""
+    """
+    Return (selectors_in_structure, remaining_pool) preserving order of remaining_pool
+    """
+
     if not always_omit:
         return [], list(all_ids)
 
@@ -132,7 +135,7 @@ def sample_ids(
     seed: Optional[int] = None,
 ) -> Iterator[List[Union["AtomID", "AminoID"]]]:
     """
-    Generator yielding lists of ID tuples (AtomID or AminoID) to omit.
+    Generator yielding lists of ID tuples (AtomID or AminoID) to omit
 
     Behaviour:
       - If `always_omit` is provided, those IDs (if present in the structure)
@@ -218,7 +221,10 @@ def sample_ids(
 def _validate_sampler_inputs(
     structure_path: Path | str, omit_fraction: float, n_iterations: Optional[int]
 ):
-    """Validate inputs for the stochastic omission sampler."""
+    """
+    Validate inputs for the stochastic omission sampler
+    """
+
     if not Path(structure_path).exists():
         raise IOError(f"Error: Structure file not found at {structure_path}")
     if not (0.0 < omit_fraction < 1.0):
@@ -228,7 +234,10 @@ def _validate_sampler_inputs(
 
 
 def _calculate_iterations(n_iterations: Optional[int], omit_fraction: float) -> int:
-    """Compute the number of iterations, using a heuristic if not provided."""
+    """
+    Compute the number of iterations, using a heuristic if not provided
+    """
+
     if n_iterations is not None:
         return int(n_iterations)
 
@@ -247,7 +256,7 @@ def stochastic_omission_sampler(
 ) -> list[Any]:
     """
     Wrapper that computes a reasonable default `n_iterations` (target ~50 maps)
-    and collects results from `sample_ids` into a flattened list.
+    and collects results from `sample_ids` into a flattened list
 
     Args:
         structure_path: path to PDB/mmCIF structure file.
@@ -258,7 +267,7 @@ def stochastic_omission_sampler(
         seed: optional RNG seed for reproducibility.
 
     Returns:
-        Flattened list of omitted selections (each a list of ID tuples).
+        Flattened list of omitted selections (each a list of ID tuples)
     """
     _validate_sampler_inputs(structure_path, omit_fraction, n_iterations)
 

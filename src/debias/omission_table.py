@@ -22,7 +22,7 @@ def build_omission_matrix(
     all_ids: Sequence[AnyID], selections: Sequence[Sequence[AnyID]]
 ) -> Tuple[List[str], np.ndarray]:
     """
-    Build a boolean omission matrix.
+    Build a boolean omission matrix
 
     Args:
         all_ids: ordered sequence of every item ID (from extract_ids).
@@ -33,10 +33,9 @@ def build_omission_matrix(
           - id_strings is a list[str] stable ID strings in the same order as all_ids
           - matrix is a numpy bool array of shape (n_items, n_samples)
             matrix[i, j] == True means item i was omitted in sample j.
-
-    Complexity:
-        - building a lookup set per sample and vectorized marking -> O(n_items * n_samples)
     """
+
+    #Complexity: O(n_items * n_samples)
     n_items = len(all_ids)
     n_samples = len(selections)
     id_strings = [_id_to_str(x) for x in all_ids]
@@ -59,7 +58,7 @@ def omission_sparse_map(
     id_strings: Sequence[str], matrix: np.ndarray
 ) -> Dict[str, List[int]]:
     """
-    Convert omission matrix to a sparse mapping id -> list of sample indices.
+    Convert omission matrix to a sparse mapping id -> list of sample indices
 
     Args:
         id_strings: list[str] of the item ids (row order).
@@ -91,7 +90,7 @@ def save_omission_json(
     sparse_map: Dict[str, List[int]],
 ) -> None:
     """
-    Save the sparse omission map to a JSON file.
+    Save the sparse omission map to a JSON file
 
     Args:
         out_path: Path where to write JSON.

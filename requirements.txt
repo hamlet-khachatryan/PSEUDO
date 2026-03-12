@@ -1,5 +1,6 @@
 click>=8.1
 eliot>=1.14
+eliot-tree>=24.0
 gemmi>=0.7
 hydra-core>=1.3
 numba>=0.60

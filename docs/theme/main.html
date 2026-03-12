@@ -23,12 +23,14 @@
         <nav>
           {% for nav_item in nav %}
             {% if nav_item.children %}
-              <p class="nav-section">{{ nav_item.title }}</p>
-              {% for child in nav_item.children %}
-                <p class="nav-link{% if child.active %} active{% endif %}">
-                  <a href="{{ child.url | url }}">{{ child.title }}</a>
-                </p>
-              {% endfor %}
+              <details class="nav-section-group"{% if nav_item.active %} open{% endif %}>
+                <summary class="nav-section">{{ nav_item.title }}</summary>
+                {% for child in nav_item.children %}
+                  <p class="nav-link nav-child{% if child.active %} active{% endif %}">
+                    <a href="{{ child.url | url }}">{{ child.title }}</a>
+                  </p>
+                {% endfor %}
+              </details>
             {% else %}
               <p class="nav-link{% if nav_item.active %} active{% endif %}">
                 <a href="{{ nav_item.url | url }}">{{ nav_item.title }}</a>
@@ -49,7 +51,43 @@
         <p><small>Built with <a href="https://www.mkdocs.org/">MkDocs</a>. Theme by <a href="https://github.com/orderedlist/minimal">orderedlist</a></small></p>
       </footer>
     </div>
+    <script>
+      (function () {
+        var headings = Array.from(document.querySelectorAll("section h2"));
+        if (headings.length === 0) return;
+
+        var details = document.createElement("details");
+        details.className = "page-toc";
+
+        var summary = document.createElement("summary");
+        summary.textContent = "On this page";
+        details.appendChild(summary);
+
+        var ul = document.createElement("ul");
+        headings.forEach(function (h) {
+          var li = document.createElement("li");
+          var a = document.createElement("a");
+          a.href = "#" + h.id;
+          a.textContent = h.textContent;
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        details.appendChild(ul);
+
+        var section = document.querySelector("section");
+        section.insertBefore(details, section.firstChild);
+      })();
+    </script>
     <script src="{{ base_url }}/javascripts/scale.fix.js"></script>
     <script src="{{ base_url }}/javascripts/copy_button.js"></script>
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]],
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   </body>
 </html>

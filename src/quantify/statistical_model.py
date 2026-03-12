@@ -15,11 +15,11 @@ def sample_null_distribution(
 ) -> np.ndarray:
     """
     Samples SNR values from within the protein mask region to establish a
-    background null distribution for statistical testing.
+    background null distribution for statistical testing
 
     Samples are drawn in raw SNR space (no normalization applied) so that
     the returned values are directly comparable to the raw SNR map passed to
-    fit_t_test and used in MUSE scoring.
+    fit_t_test and used in MUSE scoring
 
     Args:
         snr_map: Path to a CCP4 SNR map file.
@@ -29,14 +29,13 @@ def sample_null_distribution(
     Returns:
         1D array of sampled raw SNR values from within the protein region.
     """
+
     null_snrs = []
     masker = gemmi.SolventMasker(gemmi.AtomicRadiiSet.Cctbx)
 
     st = gemmi.read_structure(str(model_path))
     st.remove_waters()
 
-    # Load raw SNR values — no normalization so that null samples and the
-    # full SNR map evaluated in fit_t_test are in the same numerical space.
     grid = gemmi.read_ccp4_map(snr_map, setup=True).grid
 
     protein_mask = gemmi.FloatGrid()
@@ -54,12 +53,12 @@ def sample_null_distribution(
 
 def fit_t_test(null_snr: List, full_snr_map: np.ndarray) -> np.ndarray:
     """
-    Fits a Student's t-distribution to the null SNR samples and calculates
+    Fits a t-distribution to the null SNR samples and calculates
     the survival function (1 - CDF), representing the p-value for every
-    voxel in the map.
+    voxel in the map
 
     Both null_snr and full_snr_map must be in the same numerical space
-    (raw SNR, not normalized) for the p-values to be calibrated correctly.
+    (raw SNR, not normalized) for the p-values to be calibrated correctly
 
     Args:
         null_snr: 1D array of null-distribution SNR samples (raw, not normalized).
@@ -69,6 +68,7 @@ def fit_t_test(null_snr: List, full_snr_map: np.ndarray) -> np.ndarray:
         3D array of p-values in [0.0, 1.0]. Low values indicate statistically
         significant SNR — i.e., density unlikely to arise from background noise.
     """
+
     if len(null_snr) == 0:
         return np.zeros_like(full_snr_map)
 
@@ -80,16 +80,17 @@ def fit_t_test(null_snr: List, full_snr_map: np.ndarray) -> np.ndarray:
 
 def fit_null_distribution(null_snr: np.ndarray) -> Dict[str, float]:
     """
-    Fit a Student's t-distribution to null SNR samples and return the
-    parameters as a serialisable dict.
+    Fit a t-distribution to null SNR samples and return the
+    parameters as a serialisable dict
 
     Args:
-        null_snr: 1D array of null-distribution SNR samples.
+        null_snr: 1D array of null-distribution SNR samples
 
     Returns:
         Dict with keys 'df', 'loc', 'scale' — parameters of the fitted
         t-distribution in raw SNR space.
     """
+
     if len(null_snr) == 0:
         return {"df": 1.0, "loc": 0.0, "scale": 1.0}
     df_fit, loc_fit, scale_fit = t.fit(null_snr)
@@ -101,21 +102,22 @@ def compute_significance_threshold(
     alpha: float = 0.05,
 ) -> float:
     """
-    Return the raw SNR value at which the one-sided p-value equals alpha.
+    Return the raw SNR value at which the one-sided p-value equals alpha
 
     An atom whose MUSE score (weighted-average raw SNR over its sphere) equals
     or exceeds this threshold has density support that is statistically
     significant at the given alpha level relative to the protein-region null
-    distribution.
+    distribution
 
     Args:
         null_params: Dict with keys 'df', 'loc', 'scale' as returned by
             fit_null_distribution.
-        alpha: Significance level. Default 0.05 (5 %).
+        alpha: Significance level. Default 0.05
 
     Returns:
-        SNR threshold value T such that P(SNR > T | null) = alpha.
+        SNR threshold value T such that P(SNR > T | null) = alpha
     """
+
     return float(
         t.ppf(1.0 - alpha, df=null_params["df"], loc=null_params["loc"], scale=null_params["scale"])
     )

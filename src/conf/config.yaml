@@ -25,9 +25,5 @@ debias:
   max_structures: null
   sqlite_outcomes: null
   screening_chunk_size: 1000
-  # MTZ label overrides. Leave null for auto-detection.
-  # Set explicitly if auto-detection fails, e.g.:
-  #   mtz_f_labels: "FP,SIGFP"
-  #   mtz_rfree_label: "FreeR_flag"
   mtz_f_labels: null
   mtz_rfree_label: null

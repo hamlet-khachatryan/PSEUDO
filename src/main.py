@@ -6,7 +6,9 @@ from analyse.cli import analyse_cli
 
 @click.group()
 def cli():
-    """PSEUDO main function for CLI entrypoint."""
+    """
+    PSEUDO main function for CLI entrypoint
+    """
     pass
 
 

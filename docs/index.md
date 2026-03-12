@@ -138,6 +138,44 @@ Analysis results land in `<work_dir>/<run_name>/<crystal>/analyse_results/`:
 
 Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density support across the model.
 
+---3
+
+## Logging
+
+Each pipeline stage writes structured [eliot](https://eliot.readthedocs.io/) logs in NDJSON format to:
+
+```
+<work_dir>/<run_name>/logs/eliot/<name>.ndjson
+```
+
+For example, a debias run named `my_experiment` produces:
+
+```
+/scratch/my_project/my_experiment/logs/eliot/my_experiment.ndjson
+```
+
+Quantify and analyse stages write one log file per crystal stem (e.g. `XTAL-0001.ndjson`).
+
+### Inspecting logs with eliot-tree
+
+Use the `eliot-tree` command-line tool to render the nested action tree in a human-readable format:
+
+```bash
+eliot-tree /scratch/my_project/my_experiment/logs/eliot/my_experiment.ndjson
+```
+
+For a quantify or analyse log:
+
+```bash
+eliot-tree /scratch/my_project/my_experiment/XTAL-0001/logs/eliot/XTAL-0001.ndjson
+```
+
+`eliot-tree` is installed automatically with PSEUDO's dependencies. Pass `--help` to see filtering and formatting options:
+
+```bash
+eliot-tree --help
+```
+
 ---
 
 ## Further reading
@@ -151,7 +189,7 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density su
 
 ## Citation
 
-If you use this code — including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please cite the following paper (preprint available soon):
+If you use this code — including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please use the following citation (preprint available soon):
 
 ```bibtex
 @software{khachatryan2026pseudo,
@@ -195,3 +233,4 @@ MUSE adapts the EDIA methodology. If you use MUSE scores, please also cite:
 Copyright &copy; 2026 Hamlet Khachatryan, Conor Wild, Frank von Delft.
 
 For enquiries, contact [hamlet.khachatryan@ndm.ox.ac.uk](mailto:hamlet.khachatryan@ndm.ox.ac.uk).
+

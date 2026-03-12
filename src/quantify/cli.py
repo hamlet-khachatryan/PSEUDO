@@ -48,10 +48,9 @@ from quantify.api import run_quantification
 )
 def quantify_cli(input_path, stem, force, k_factor, map_cap, num_processes):
     """
-    Quantify Omission Ensembles.
-    Generates Signal, Noise, and SNR maps using robust matrix subtraction.
-    Automatically detects single-structure or screening (multi-structure) input.
+    Quantify Omission Ensembles
     """
+
     try:
         run_quantification(input_path, stem, force, k_factor, map_cap, num_processes)
     except Exception as e:

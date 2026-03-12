@@ -18,8 +18,7 @@ from debias.omission_table import (
 
 PARAM_TEMPLATES = Path(__file__).parent / "phenix_templates"
 
-# Ordered by preference: Phenix-refined amplitudes first, then CCP4 amplitudes,
-# then intensities as last resort.
+# Phenix-refined amplitudes first, then CCP4 amplitudes,
 _F_CANDIDATES: List[Tuple[str, str]] = [
     ("F-obs-filtered", "SIGF-obs-filtered"),
     ("F-obs", "SIGF-obs"),
@@ -33,9 +32,10 @@ _F_CANDIDATES: List[Tuple[str, str]] = [
     ("IOBS", "SIGIOBS"),
 ]
 
-# Ordered by preference: CCP4 aimless output first, then Phenix, then fallbacks.
+# CCP4 aimless output first, then Phenix, then fallbacks.
 # Status is last because it is a character column in some MTZ files and is only
 # suitable as a free-set indicator when no dedicated flag column exists.
+
 _RFREE_CANDIDATES: List[str] = [
     "FreeR_flag",
     "FREE",
@@ -49,16 +49,14 @@ def _detect_mtz_labels(
     mtz_path: str,
     crystal_id: str,
 ) -> Tuple[str, str]:
-    """Auto-detect observed-data and R-free labels from an MTZ file.
+    """
+    Auto-detect observed-data and R-free labels from an MTZ file
 
     Returns ``(f_label, rfree_label)`` where *f_label* is a comma-separated
     amplitude+sigma pair suitable for ``input.xray_data.labels`` and
     *rfree_label* is the R-free flag column name.
-
-    Raises ``ValueError`` with actionable guidance if either label cannot be
-    resolved, listing the columns that *were* found so the user knows what to
-    set in ``debias.mtz_f_labels`` / ``debias.mtz_rfree_label``.
     """
+
     with eliot.start_action(
         action_type="debias:detect_mtz_labels",
         crystal_id=crystal_id,
@@ -133,7 +131,8 @@ def _detect_mtz_labels(
 def generate_parameter_files(
     cfg: DebiasConfig, dirs: dict, crystal: Tuple[str, str, str]
 ) -> List[Path]:
-    """Generate parameter files to omit perturbations.
+    """
+    Generate parameter files to omit perturbations
 
     Args:
         cfg: Module configuration.
@@ -169,8 +168,6 @@ def generate_parameter_files(
     )
     param_ready.save(str(dirs["processed"] / "ready_set.params"))
 
-    # Resolve MTZ labels once per crystal: config overrides take priority,
-    # then auto-detection.  Both must be resolved before generating params.
     f_label: Optional[str] = cfg.debias.mtz_f_labels or None
     rfree_label: Optional[str] = cfg.debias.mtz_rfree_label or None
 
@@ -242,7 +239,10 @@ def generate_parameter_files(
 
 
 def _format_selection(selection_data: List[Tuple], omit_type: str) -> str:
-    """Helper to format the selection list into a Phenix string."""
+    """
+    Helper to format the selection list into a Phenix string
+    """
+
     formatted = []
 
     if omit_type == "amino_acids":

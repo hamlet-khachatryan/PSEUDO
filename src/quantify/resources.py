@@ -23,7 +23,7 @@ ATOM_RADII_DATA = {
 
 def get_atom_radius(element: str, resolution: float) -> float:
     """
-    Retrieves the atom radius for a given element and resolution.
+    Retrieves the atom radius for a given element and resolution
     """
     element = element.upper().strip()
 

@@ -144,7 +144,9 @@ def _setup_debias_directories(
     cfg: DebiasConfig,
     crystals: list,
 ) -> tuple[dict[str, Path], list[Any]]:
-    """Create a directory structure for the run."""
+    """
+    Create a directory structure for the run
+    """
 
     base = Path(cfg.paths.work_dir) / cfg.debias.run_name
 
@@ -176,7 +178,7 @@ def _setup_debias_directories(
 
 def generate_slurm_job(cfg: DebiasConfig):
     """
-    Generate SLURM scripts and manifests for cluster submission.
+    Generate SLURM scripts and manifests for cluster submission
     """
     log_dir = Path(cfg.paths.work_dir) / cfg.debias.run_name / "logs" / "eliot"
     setup_eliot_logging(log_dir, cfg.debias.run_name)
@@ -210,13 +212,11 @@ def generate_slurm_job(cfg: DebiasConfig):
             sbatch_dir=str(dirs["sbatch"]),
         )
 
-        # Preprocessing: single manifest and script (one job per crystal, always manageable)
         pre_manifest = dirs["sbatch"] / "preprocessing_manifest.txt"
         with open(pre_manifest, "w") as f:
             for crystal in crystals:
                 f.write(f"{crystal[0]}|{crystal[1]}|{crystal[2]}\n")
 
-        # Full omit manifest kept for reference
         omit_manifest_full = dirs["sbatch"] / "omit_manifest.txt"
         with open(omit_manifest_full, "w") as f:
             for param_file in omit_params:
@@ -233,7 +233,6 @@ def generate_slurm_job(cfg: DebiasConfig):
             f.write(content_preprocessing)
         out_script_preprocessing.chmod(0o755)
 
-        # Omission: split into chunks, one sbatch script per chunk
         omission_scripts = []
         chunks = [omit_params[i:i + chunk_size] for i in range(0, len(omit_params), chunk_size)]
         for i, chunk in enumerate(chunks):
@@ -261,7 +260,6 @@ def generate_slurm_job(cfg: DebiasConfig):
             omission_scripts=[str(s) for s in omission_scripts],
         )
 
-        # Build chained submission command
         submission_lines = [f"jid=$(sbatch --parsable {out_script_preprocessing})"]
         for script in omission_scripts:
             submission_lines.append(
@@ -283,16 +281,15 @@ def _screening_exploration(
     outcomes: Optional[str] = None,
     max_structures: Optional[int] = None,
 ):
-    """Extract PDB/MTZ pairs from a CSV or Diamond SoakDB SQLite file.
+    """
+    Extract PDB/MTZ pairs from a CSV or Diamond SoakDB SQLite file
 
     CSV input always processes all rows. SQLite input supports optional
     outcome filtering and structure count capping.
 
-    outcomes: comma-separated string matched against RefinementOutcome, e.g.
-        "CompChem ready, Deposition ready, Deposited"
+    outcomes: comma-separated string matched against RefinementOutcome
     Accepted values:
-        "Analysis Pending", "PANDDA model - minor", "In Refinement",
-        "CompChem ready", "Deposition ready", "Deposited", "Analysed & Rejected"
+        "CompChem ready", "Deposition ready", "Deposited"
     """
     # TODO Implement screening exploration logic based on XCA output file structure
     screening_items = []
@@ -357,8 +354,9 @@ def _sqlite_as_dataframe(file_path, table="mainTable"):
 
 def _config_validator(cfg: DebiasConfig) -> None:
     """
-    Validates the DebiasConfig.
+    Validates the DebiasConfig
     """
+
     debias = cfg.debias
 
     s_path = str(debias.structure_path) if debias.structure_path else None

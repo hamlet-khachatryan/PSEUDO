@@ -5,12 +5,9 @@ from quantify.ownership_logic import query_voxel_ownership
 
 def solve_voxel(values: np.ndarray, status: np.ndarray):
     """
-    Extracts true background intensity and residual phase bias.
-      - If status is None: Return mean/std.
-      - If status exists (Occupied voxels):
-         - If column has both 0s and 1s, calculate bias.
-         - all 1s or all 0s: bias = 0.
+    Extracts true background intensity and residual phase bias
     """
+
     if status is None:
         # return [np.mean(values), np.std(values, ddof=1), values.tolist()]
         return [np.mean(values), np.std(values, ddof=1)]
@@ -27,7 +24,6 @@ def solve_voxel(values: np.ndarray, status: np.ndarray):
         if has_present and has_omitted:
             biases[j] = np.mean(values[col == 1.0]) - np.mean(values[col == 0.0])
         else:
-            # We keep 0 bias value for the all exist case to not stop the STOMP map generation for partial perturbations
             biases[j] = 0.0
 
     total_bias_vector = np.dot(status, biases)

@@ -19,7 +19,10 @@ _NONE_RE = re.compile(r"^None$", re.IGNORECASE)
 
 
 def _tokenize_line_value(raw: str) -> List[str]:
-    """Tokenize a right-hand side value into tokens."""
+    """
+    Tokenize a right-hand side value into tokens
+    """
+
     raw = raw.strip()
     if raw == "":
         return []
@@ -33,7 +36,10 @@ def _tokenize_line_value(raw: str) -> List[str]:
 
 
 def _parse_scalar_token(token: str) -> Any:
-    """Parse a single token to int/float/bool/None/string according to patterns."""
+    """
+    Parse a single token to int/float/bool/None/string according to patterns
+    """
+
     if _NONE_RE.match(token):
         return None
     if _BOOL_RE.match(token):
@@ -54,14 +60,7 @@ def _parse_scalar_token(token: str) -> Any:
 
 def parse_parameters(file_content: str) -> Dict[str, Any]:
     """
-    Parse the textual content of a parameter file into a nested dictionary.
-
-    - Supports `key = value` lines and nested blocks:
-        key {
-           nested_key = value
-        }
-    - Values can be quoted strings, ints, floats, booleans, None, or lists of tokens.
-    - Comments (lines starting with '#') and blank lines are ignored.
+    Parse the textual content of a parameter file into a nested dictionary
     """
     lines = file_content.splitlines()
     i = 0
@@ -114,7 +113,7 @@ def parse_parameters(file_content: str) -> Dict[str, Any]:
 
 def _format_value_for_output(value: Any) -> str:
     """
-    Convert Python object into the textual representation.
+    Convert Python object into the textual representation
     """
     if value is None:
         return "None"
@@ -139,7 +138,7 @@ def _format_value_for_output(value: Any) -> str:
 
 def format_parameters(params: Dict[str, Any], indent: int = 0) -> str:
     """
-    Format the parameters dict back into a string matching the parameter file style.
+    Format the parameters dict back into a string matching the parameter file style
     """
     lines: List[str] = []
     prefix = "  " * indent
@@ -157,7 +156,7 @@ def format_parameters(params: Dict[str, Any], indent: int = 0) -> str:
 @dataclass
 class ParameterFile:
     """
-    Impure wrapper to read/write phenix parameter files.
+    Impure wrapper to read/write phenix parameter files
     """
 
     file_path: Path | str = None
@@ -200,7 +199,7 @@ class ParameterFile:
 
     def save(self, out_path: Optional[Path | str] = None, mode: int = 0o644) -> None:
         """
-        Save current parameters to disk atomically using a temporary file.
+        Save current parameters to disk atomically using a temporary file
         """
         if out_path is None:
             if self.file_path is None:

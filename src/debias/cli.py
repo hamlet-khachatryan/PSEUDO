@@ -4,7 +4,9 @@ from debias.api import generate_slurm_job, load_debias_config
 
 @click.group(name="debias")
 def debias_cli():
-    """Commands for the Debias/Omit Map module."""
+    """
+    Commands for the Debias/Omit Map module
+    """
     pass
 
 
@@ -50,9 +52,7 @@ def debias_cli():
     type=str,
     default=None,
     help=(
-        "Comma-separated substrings to match against RefinementOutcome in SoakDB SQLite files. "
-        "Accepted values: 'CompChem ready', 'Deposition ready', 'Deposited', 'Analysed & Rejected'."
-        "No effect on CSV input. Defaults to no filtering (all structures included)."
+        "Comma-separated substrings to match against RefinementOutcome in SoakDB SQLite files."
     ),
 )
 @click.option(
@@ -61,7 +61,6 @@ def debias_cli():
     default=None,
     help=(
         "Maximum number of structures to process from a SQLite file. "
-        "No effect on CSV or single-structure input. "
         "Defaults to no cap (all matching structures processed)."
     ),
 )
@@ -70,12 +69,10 @@ def debias_cli():
     type=int,
     default=None,
     help=(
-        "Maximum number of omission jobs per sbatch array submission. "
-        "Omission jobs are chunked and submitted sequentially to avoid flooding the scheduler. "
-        "Defaults to 1000."
+        "Maximum number of omission jobs per sbatch array submission. Defaults to 1000."
     ),
 )
-# MTZ label overrides
+
 @click.option(
     "--mtz_f_labels",
     type=str,

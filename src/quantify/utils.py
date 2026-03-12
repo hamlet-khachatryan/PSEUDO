@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Generator, Any, Optional, List
+from typing import Dict, Generator, Any, List
 
 import gemmi
 
 
 def read_mtz(mtz_path: Path | str) -> gemmi.Ccp4Map:
     """
-    Read a MTZ file and return a gemmi.Ccp4Map object.
+    Read a MTZ file and return a gemmi.Ccp4Map object
     """
     reflections = gemmi.read_mtz_file(str(mtz_path))
 
@@ -41,7 +41,10 @@ def read_mtz(mtz_path: Path | str) -> gemmi.Ccp4Map:
 
 
 def _detect_model_ext(processed_dir: Path, stem: str) -> str:
-    """Return the extension (.pdb or .cif) of the updated model, defaulting to .pdb."""
+    """
+    Return the extension (.pdb or .cif) of the updated model, defaulting to .pdb
+    """
+
     for ext in (".pdb", ".cif"):
         if (processed_dir / f"{stem}_updated{ext}").exists():
             return ext
@@ -49,7 +52,10 @@ def _detect_model_ext(processed_dir: Path, stem: str) -> str:
 
 
 def _detect_original_model(processed_dir: Path, stem: str) -> Path:
-    """Return the path to the original model, searching by suffix if the canonical name is absent."""
+    """
+    Return the path to the original model, searching by suffix if the canonical name is absent
+    """
+
     for ext in (".pdb", ".cif"):
         candidate = processed_dir / f"{stem}_original{ext}"
         if candidate.exists():
@@ -79,16 +85,6 @@ def validate_experiment(paths: Dict[str, Path]) -> bool:
     return paths["processed_pdb"].exists() and paths["omission_json"].exists()
 
 
-def infer_stem(processed_dir: Path) -> Optional[str]:
-    try:
-        for suffix in ("_updated.pdb", "_updated.cif"):
-            files = list(processed_dir.glob(f"*{suffix}"))
-            if files:
-                return files[0].name[: -len(suffix)]
-        return None
-    except Exception:
-        return None
-
 
 def find_experiments(input_path: str) -> Generator[Dict[str, Any], None, None]:
     root = Path(input_path).resolve()
@@ -96,29 +92,29 @@ def find_experiments(input_path: str) -> Generator[Dict[str, Any], None, None]:
         raise FileNotFoundError(f"Path not found: {root}")
 
     if (root / "processed").exists():
-        stem = infer_stem(root / "processed")
-        if stem:
-            paths = get_experiment_paths(root, stem)
+        stem = root.name
+        paths = get_experiment_paths(root, stem)
+        if validate_experiment(paths):
+            paths["stem"] = stem
+            yield paths
+            return
+
+    for subdir in sorted(root.iterdir()):
+        if subdir.is_dir() and (subdir / "processed").exists():
+            stem = subdir.name
+            paths = get_experiment_paths(subdir, stem)
             if validate_experiment(paths):
                 paths["stem"] = stem
                 yield paths
-                return
-
-    for subdir in root.iterdir():
-        if subdir.is_dir() and (subdir / "processed").exists():
-            stem = infer_stem(subdir / "processed")
-            if stem:
-                paths = get_experiment_paths(subdir, stem)
-                if validate_experiment(paths):
-                    paths["stem"] = stem
-                    yield paths
+            else:
+                print(f"Warning: skipping {subdir.name} — missing processed model or omission map.")
 
 
 def infer_omission_mode(json_data: Dict[str, List[int]]) -> str:
     """
-    Infers mode based on whether atoms in the same residue have different omission maps.
+    Infers mode based on whether atoms in the same residue have different omission maps
     """
-    # Track unique schedules per residue
+
     schedules_per_residue = defaultdict(set)
 
     for key, maps in json_data.items():

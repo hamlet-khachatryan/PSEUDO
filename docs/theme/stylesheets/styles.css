@@ -183,6 +183,53 @@ header nav p {
   margin:0 0 6px;
 }
 
+/* ── Collapsible section (dropdown) ─────────────────────── */
+
+header nav details.nav-section-group {
+  margin:14px 0 4px;
+}
+
+header nav details.nav-section-group summary.nav-section {
+  font-size:11px;
+  color:#999;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  font-weight:500;
+  cursor:pointer;
+  list-style:none;          /* hide default triangle */
+  display:flex;
+  align-items:center;
+  gap:4px;
+  user-select:none;
+  margin:0;
+}
+
+header nav details.nav-section-group summary.nav-section::before {
+  content:"▸";
+  font-size:9px;
+  color:#bbb;
+  transition:transform 0.15s;
+  display:inline-block;
+}
+
+header nav details.nav-section-group[open] summary.nav-section::before {
+  transform:rotate(90deg);
+}
+
+header nav details.nav-section-group summary.nav-section::-webkit-details-marker {
+  display:none;
+}
+
+header nav details.nav-section-group summary.nav-section:hover {
+  color:#666;
+}
+
+header nav p.nav-child {
+  margin:0 0 4px 10px;
+}
+
+/* ── Plain nav links ─────────────────────────────────────── */
+
 header nav p.nav-section {
   font-size:11px;
   color:#999;
@@ -356,4 +403,64 @@ div.highlight:hover .copy-btn {
   background: #f0f0f0;
   color: #333;
   border-color: #ccc;
+}
+
+/* ── On-this-page dropdown ───────────────────────────────── */
+
+details.page-toc {
+  margin: 0 0 28px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  background: #fafafa;
+  padding: 0;
+}
+
+details.page-toc summary {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  user-select: none;
+}
+
+details.page-toc summary::-webkit-details-marker {
+  display: none;
+}
+
+details.page-toc summary::before {
+  content: "▸";
+  font-size: 9px;
+  color: #bbb;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+details.page-toc[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details.page-toc summary:hover {
+  color: #39c;
+}
+
+details.page-toc ul {
+  margin: 0;
+  padding: 0 12px 10px 24px;
+  list-style: none;
+}
+
+details.page-toc ul li {
+  margin: 4px 0;
+}
+
+details.page-toc ul li a {
+  font-size: 13px;
+  color: #595959;
 }

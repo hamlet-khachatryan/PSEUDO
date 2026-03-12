@@ -27,9 +27,11 @@ markdown_extensions:
   - tables
   - admonition
   - toc:
-      permalink: true
+      permalink: false
   - pymdownx.highlight:
       use_pygments: true
       guess_lang: false
   - pymdownx.superfences
   - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true

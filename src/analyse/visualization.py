@@ -21,7 +21,10 @@ _SCORE_ATTR = {
 }
 
 def edia_colormap() -> mcolors.LinearSegmentedColormap:
-    """Red → pink → blue colormap for quality scale (0 – zeta)"""
+    """
+    Red → pink → blue colormap for quality scale (0 – zeta)
+    """
+
     colours = [
         (0.0, "#D62728"),
         (0.4 / 1.2, "#FF9896"),
@@ -32,7 +35,10 @@ def edia_colormap() -> mcolors.LinearSegmentedColormap:
 
 
 def pvalue_colormap() -> mcolors.LinearSegmentedColormap:
-    """Red → yellow → green colormap for p-value maps [0, 1]"""
+    """
+    Red → yellow → green colormap for p-value maps [0, 1]
+    """
+
     colours = [
         (0.0, "#D62728"),
         (0.5, "#FFDD71"),
@@ -47,7 +53,7 @@ def extract_residue_scores(
     chain_id: Optional[str] = None,
 ) -> ResidueDict:
     """
-    Extract per-residue scores from a MUSEResult into a {seq_id: value} dict.
+    Extract per-residue scores from a MUSEResult into a {seq_id: value} dict
 
     Args:
         result: Completed MUSEResult.
@@ -70,7 +76,7 @@ def plot_residue_profile(
     edia_thresholds: bool = True,
 ) -> Figure:
     """
-    Line plot of per-residue MUSE scores.
+    Line plot of per-residue MUSE scores
 
     Args:
         scores: {seq_id: score} dict (from extract_residue_scores())

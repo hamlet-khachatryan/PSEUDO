@@ -16,6 +16,7 @@ def parse_atom_key(key: str) -> Tuple[str, str, str, str, str]:
     """
     Parses Atom Key: "A|1856|SER|N|\u0000"
     """
+
     parts = key.split("|")
     altloc = parts[4] if (len(parts) > 4 and parts[4] != "\u0000") else ""
     return parts[0], parts[1], parts[2], parts[3], altloc
@@ -25,12 +26,16 @@ def parse_residue_key(key: str) -> Tuple[str, str, str]:
     """
     Parses Residue Key: "A|1856|SER"
     """
+
     parts = key.split("|")
     return parts[0], parts[1], parts[2]
 
 
 def load_omission_map(json_path: Path) -> Dict[str, List[int]]:
-    """Loads the omission map JSON file."""
+    """
+    Loads the omission map JSON file
+    """
+
     with open(json_path, "r") as f:
         return json.load(f)
 
@@ -51,9 +56,7 @@ def build_spatial_index(
     mode: str = "atoms",
 ) -> Dict[str, Any] | None:
     """
-    Builds the spatial index (KDTree) and maps atoms to their logical owners.
-    mode='atoms': Logical owner is the atom key itself.
-    mode='amino_acids': Logical owner is the residue key (grouping all atoms of the residue).
+    Builds the spatial index (KDTree) and maps atoms to their logical owners
     """
 
     try:
@@ -146,8 +149,8 @@ def query_voxel_ownership(
 ) -> Optional[np.ndarray]:
     """
     Returns status_matrix [n_maps, N_UNIQUE_OWNERS].
-    Handles deduplication of owners.
     """
+
     if not spatial_index:
         return None
 

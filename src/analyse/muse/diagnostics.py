@@ -66,7 +66,8 @@ def flag_missing_density(
     config: AggregationConfig,
 ) -> None:
     """
-    Flag atoms where the positive-weight score is below the threshold, suggesting that the atom placement is unsupported
+    Flag atoms where the positive-weight score is below the threshold, suggesting that the
+    atom placement is unsupported
 
     Args:
         atom_scores: Per-atom scores whose has_missing_density fields are updated
@@ -83,7 +84,8 @@ def flag_unaccounted_density(
     config: AggregationConfig,
 ) -> None:
     """
-    Flag atoms with significant negative-weight score, suggesting nearby unmodelled density or a misfit
+    Flag atoms with significant negative-weight score, suggesting nearby unmodelled
+    density or a misfit
 
     Args:
         atom_scores: Per-atom scores whose has_unaccounted_density fields are

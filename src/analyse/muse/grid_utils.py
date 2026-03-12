@@ -1,6 +1,4 @@
 """
-Grid oversampling and grid-point-in-sphere enumeration
-
 References:
     - Meyder et al. (2017) J. Chem. Inf. Model. 57, 2437-2447
     - Nittinger et al. (2015) J. Chem. Inf. Model. 55, 771-783
@@ -64,9 +62,7 @@ def enumerate_grid_points_in_sphere(
         max_spacing: Maximum grid spacing before oversampling
         interpolation_order: Interpolation order for sub-grid values 1 = trilinear, 3 = tricubic
     Returns:
-        Tuple of (positions, values) where:
-            positions: ndarray of shape (N, 3)
-            values: ndarray of shape (N,)
+        Tuple of (positions, values)
     """
     uc = grid.unit_cell
     os_factors = compute_oversampling_factors(grid, max_spacing)

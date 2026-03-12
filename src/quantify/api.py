@@ -56,6 +56,7 @@ def save_map(array: np.ndarray, ref_grid: gemmi.FloatGrid, output_path: Path | s
     """
     Saves MTZ files as a ccp4 map
     """
+
     grid = gemmi.FloatGrid(array)
     grid.set_unit_cell(ref_grid.unit_cell)
     grid.spacegroup = ref_grid.spacegroup
@@ -70,6 +71,7 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
     """
     Run quantification for a single experiment defined by a paths dict
     """
+
     stem = paths["stem"]
     log_dir = paths["root"] / "logs" / "eliot"
     setup_eliot_logging(log_dir, stem)
@@ -98,14 +100,18 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
         print(f"--- Quantifying {stem} (K={k_factor}) ---")
 
         if not paths["omission_json"].exists():
-            raise FileNotFoundError(f"JSON not found: {paths['omission_json']}")
+            print(f"Skipping {stem}: omission map not found.")
+            eliot.log_message(message_type="quantify:skipped", stem=stem, reason="omission_json_missing")
+            return
 
         omission_map = ownership_logic.load_omission_map(paths["omission_json"])
         mode = infer_omission_mode(omission_map)
 
         res_ref = paths["results_dir"] / f"{stem}_0" / f"{stem}_0.mtz"
         if not res_ref.exists():
-            raise FileNotFoundError("Cannot find map 0 to infer resolution.")
+            print(f"Skipping {stem}: no perturbation maps found in results directory.")
+            eliot.log_message(message_type="quantify:skipped", stem=stem, reason="no_maps")
+            return
 
         mtz = gemmi.read_mtz_file(str(res_ref))
         resolution = mtz.resolution_high()
@@ -146,7 +152,7 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
         with eliot.start_action(action_type="quantify:statistical_model", n_samples=20000):
             null_samples = statistical_model.sample_null_distribution(
                 snr_map=str(out_dir / f"{stem}_snr.ccp4"),
-                model_path=paths["imginal_pdb"],
+                model_path=paths["original_pdb"],
                 n_samples=20000,
             )
             null_params = statistical_model.fit_null_distribution(null_samples)

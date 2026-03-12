@@ -1,7 +1,4 @@
 """
-Per-atom MUSE score computation
-EDIA formula for protein/ligand atoms and the simpler variant for water molecules
-
 References:
     - Meyder et al. (2017) J. Chem. Inf. Model. 57, 2437-2447
     - Nittinger et al. (2015) J. Chem. Inf. Model. 55, 771-783

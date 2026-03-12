@@ -1,6 +1,4 @@
 """
-Weight functions for MUSE scoring.
-
 References:
     - Meyder et al. (2017) J. Chem. Inf. Model. 57, 2437-2447
     - Nittinger et al. (2015) J. Chem. Inf. Model. 55, 771-783
@@ -22,6 +20,7 @@ def parabolic_weight(
 ) -> float:
     """
     Compute the 3-parabola weighting value for a single distance
+
     Args:
         distance: Distance from atom center to grid point
         radius: Atom electron density sphere radius

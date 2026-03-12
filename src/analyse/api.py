@@ -30,7 +30,10 @@ _DEFAULT_MAP_CAP = 50
 
 
 def _resolve_map_path(paths: dict, k_factor: float, map_cap: Optional[int]) -> Path:
-    """Locate the SNR CCP4 map for the given k_factor/map_cap. Auto-detects highest cap if map_cap is None."""
+    """
+    Locate the SNR CCP4 map for the given k_factor/map_cap. Auto-detects highest cap if map_cap is None
+    """
+
     stem = paths["stem"]
     qdir = paths["quantify_dir"]
 
@@ -79,7 +82,10 @@ def _resolve_model_path(paths: dict) -> Path:
 
 
 def _load_null_params(paths: dict, k_factor: float, map_cap: int) -> Optional[dict]:
-    """Load fitted null-distribution parameters from metadata"""
+    """
+    Load fitted null-distribution parameters from metadata
+    """
+
     null_params_path = (
         paths["metadata_dir"]
         / f"{paths['stem']}_null_params_k{k_factor}_cap{map_cap}.json"
@@ -104,7 +110,10 @@ def _load_null_params(paths: dict, k_factor: float, map_cap: int) -> Optional[di
 
 
 def _infer_resolution(paths: dict) -> float:
-    """Infer resolution in Ångströms from the first available MTZ file."""
+    """
+    Infer resolution in Ångströms from the first available MTZ file
+    """
+
     stem = paths["stem"]
     results_dir = paths["results_dir"]
 
@@ -128,7 +137,10 @@ def _analyse_single(
     map_cap: Optional[int],
     significance_alpha: float = 0.05,
 ) -> None:
-    """Run MUSE analysis for one experiment and write results to analyse_results/."""
+    """
+    Run MUSE analysis for one experiment and write results to analyse_results/
+    """
+
     stem = paths["stem"]
     log_dir = paths["root"] / "logs" / "eliot"
     setup_eliot_logging(log_dir, stem)
@@ -142,21 +154,26 @@ def _analyse_single(
     ):
         start_time = time.time()
 
-        if map_path:
-            resolved_map = Path(map_path)
-            if not resolved_map.exists():
-                raise FileNotFoundError(f"Provided map not found: {map_path}")
-        else:
-            resolved_map = _resolve_map_path(paths, k_factor, map_cap)
+        try:
+            if map_path:
+                resolved_map = Path(map_path)
+                if not resolved_map.exists():
+                    raise FileNotFoundError(f"Provided map not found: {map_path}")
+            else:
+                resolved_map = _resolve_map_path(paths, k_factor, map_cap)
 
-        if model_path:
-            resolved_model = Path(model_path)
-            if not resolved_model.exists():
-                raise FileNotFoundError(f"Provided model not found: {model_path}")
-        else:
-            resolved_model = _resolve_model_path(paths)
+            if model_path:
+                resolved_model = Path(model_path)
+                if not resolved_model.exists():
+                    raise FileNotFoundError(f"Provided model not found: {model_path}")
+            else:
+                resolved_model = _resolve_model_path(paths)
 
-        resolution = _infer_resolution(paths)
+            resolution = _infer_resolution(paths)
+        except FileNotFoundError as exc:
+            print(f"Skipping {stem}: {exc}")
+            eliot.log_message(message_type="analyse:skipped", stem=stem, reason=str(exc))
+            return
 
         out_dir = paths["root"] / "analyse_results"
         out_dir.mkdir(exist_ok=True, parents=True)
@@ -233,9 +250,10 @@ def run_analysis(
     num_processes: int = 1,
     significance_alpha: float = 0.05,
 ) -> None:
-    """Run MUSE analysis on a single experiment or a screening directory.
-    Auto-detects single vs. screening mode; parallelises with num_processes in screening.
     """
+    Run MUSE analysis on a single experiment or a screening directory
+    """
+
     input_path = Path(input_path)
 
     if stem:

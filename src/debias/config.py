@@ -11,7 +11,7 @@ class SlurmResources:
     job_name: str = "debias_job"
     partition: str = "cs05r"
     time: str = "3-00:00:00"
-    mem_per_cpu: str = "1024"
+    mem_per_cpu: str = "5G"
     cpus_per_task: int = 1
     num_nodes: int = 3
 
@@ -35,18 +35,16 @@ class DebiasParams:
     reflections_path: Optional[str] = None
     screening_path: Optional[str] = None
     sqlite_outcomes: Optional[str] = None  # specific for DLS XChem screening data
-    max_structures: Optional[int] = None  # specific for DLS XChem screening data
-    screening_chunk_size: int = 1000  # max omission jobs per sbatch array submission
-    # MTZ label overrides — set when auto-detection fails or picks the wrong column.
-    # mtz_f_labels:    comma-separated amplitude+sigma labels, e.g. "FP,SIGFP"
-    # mtz_rfree_label: R-free flag column name,              e.g. "FreeR_flag"
-    mtz_f_labels: Optional[str] = None
-    mtz_rfree_label: Optional[str] = None
-
+    max_structures: Optional[int] = None   # specific for DLS XChem screening data
+    screening_chunk_size: int = 1000       # max omission jobs per sbatch array submission
+    mtz_f_labels: Optional[str] = None     # comma-separated amplitude+sigma labels, e.g. "FP,SIGFP"
+    mtz_rfree_label: Optional[str] = None  # R-free flag column name, e.g. "FreeR_flag"
 
 @dataclass
 class DebiasConfig:
-    """Aggregated config for the Debias execution context."""
+    """
+    Aggregated config for the Debias execution context
+    """
 
     slurm: SlurmResources = field(default_factory=SlurmResources)
     paths: PathConfig = field(default_factory=PathConfig)

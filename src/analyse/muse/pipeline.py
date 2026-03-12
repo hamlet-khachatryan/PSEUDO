@@ -45,7 +45,9 @@ def _build_atom_registry(
     Dict[AtomId, bool],
     Dict[AtomId, Tuple[str, str, int, str, str, str]],
 ]:
-    """Pre-build per-atom data arrays for the full model"""
+    """
+    Pre-build per-atom data arrays for the full model
+    """
     positions: Dict[AtomId, np.ndarray] = {}
     radii: Dict[AtomId, float] = {}
     is_water_map: Dict[AtomId, bool] = {}
@@ -127,7 +129,10 @@ def run_muse(
     skip_hydrogens: bool = True,
     run_error_diagnostics: bool = True,
 ) -> MUSEResult:
-    """Run the full MUSE scoring pipeline and return a MUSEResult."""
+    """
+    Run the full MUSE scoring pipeline and return a MUSEResult
+    """
+
     if config is None:
         config = default_config()
 
@@ -250,7 +255,10 @@ def run_muse(
     )
 
 def export_atom_csv(result: MUSEResult, output_path: str) -> None:
-    """Write per-atom MUSE scores to a CSV file."""
+    """
+    Write per-atom MUSE scores to a CSV file
+    """
+
     fieldnames = [
         "chain_id", "residue_name", "residue_seq_id", "insertion_code",
         "atom_name", "element", "score", "score_positive", "score_negative",
@@ -280,7 +288,9 @@ def export_atom_csv(result: MUSEResult, output_path: str) -> None:
 
 
 def export_residue_csv(result: MUSEResult, output_path: str) -> None:
-    """Write per-residue MUSEm scores to a CSV file."""
+    """
+    Write per-residue MUSEm scores to a CSV file
+    """
     fieldnames = [
         "chain_id", "residue_name", "residue_seq_id", "insertion_code",
         "musem_score", "min_atom_score", "median_atom_score", "max_atom_score",
@@ -306,7 +316,10 @@ def export_residue_csv(result: MUSEResult, output_path: str) -> None:
 
 
 def export_summary(result: MUSEResult) -> dict:
-    """Return a flat summary dict of key MUSE statistics (OPIA, counts, diagnostics)."""
+    """
+    Return a flat summary dict of key MUSE statistics
+    """
+
     scores = [a.score for a in result.atom_scores]
     return {
         "n_atoms": len(result.atom_scores),
@@ -331,7 +344,10 @@ def write_scored_pdb(
     score_scale: float = 100.0,
     missing_value: float = 0.0,
 ) -> None:
-    """Write a PDB file with MUSE scores embedded in the B-factor column."""
+    """
+    Write a PDB file with MUSE scores embedded in the B-factor column
+    """
+
     if score_level not in ("residue", "atom"):
         raise ValueError("score_level must be 'residue' or 'atom'.")
 
