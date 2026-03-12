@@ -23,7 +23,7 @@ def load_map(map_path: str) -> gemmi.FloatGrid:
         raise FileNotFoundError(f"Map file not found: {map_path}")
 
     ccp4_map = gemmi.read_ccp4_map(str(path))
-    ccp4_map.setup(gemmi.MapSetup.Full)
+    ccp4_map.setup(float("nan"))
     return ccp4_map.grid
 
 
