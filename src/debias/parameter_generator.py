@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 import itertools
+
+import eliot
+import gemmi
 
 from debias.phenix_param_parser import ParameterFile
 from debias.omission_sampler import stochastic_omission_sampler
@@ -14,6 +17,117 @@ from debias.omission_table import (
 )
 
 PARAM_TEMPLATES = Path(__file__).parent / "phenix_templates"
+
+# Ordered by preference: Phenix-refined amplitudes first, then CCP4 amplitudes,
+# then intensities as last resort.
+_F_CANDIDATES: List[Tuple[str, str]] = [
+    ("F-obs-filtered", "SIGF-obs-filtered"),
+    ("F-obs", "SIGF-obs"),
+    ("FP", "SIGFP"),
+    ("FOBS", "SIGFOBS"),
+    ("Fobs", "SIGFobs"),
+    ("F", "SIGF"),
+    ("FTOT", "SIGTOT"),
+    ("IMEAN", "SIGIMEAN"),
+    ("I", "SIGI"),
+    ("IOBS", "SIGIOBS"),
+]
+
+# Ordered by preference: CCP4 aimless output first, then Phenix, then fallbacks.
+# Status is last because it is a character column in some MTZ files and is only
+# suitable as a free-set indicator when no dedicated flag column exists.
+_RFREE_CANDIDATES: List[str] = [
+    "FreeR_flag",
+    "FREE",
+    "FREER",
+    "R-free-flags",
+    "Status",
+]
+
+
+def _detect_mtz_labels(
+    mtz_path: str,
+    crystal_id: str,
+) -> Tuple[str, str]:
+    """Auto-detect observed-data and R-free labels from an MTZ file.
+
+    Returns ``(f_label, rfree_label)`` where *f_label* is a comma-separated
+    amplitude+sigma pair suitable for ``input.xray_data.labels`` and
+    *rfree_label* is the R-free flag column name.
+
+    Raises ``ValueError`` with actionable guidance if either label cannot be
+    resolved, listing the columns that *were* found so the user knows what to
+    set in ``debias.mtz_f_labels`` / ``debias.mtz_rfree_label``.
+    """
+    with eliot.start_action(
+        action_type="debias:detect_mtz_labels",
+        crystal_id=crystal_id,
+        mtz_path=mtz_path,
+    ):
+        try:
+            mtz = gemmi.read_mtz_file(mtz_path)
+        except Exception as exc:
+            raise ValueError(
+                f"[{crystal_id}] Cannot read MTZ file '{mtz_path}': {exc}"
+            ) from exc
+
+        all_cols = [{"label": col.label, "type": col.type} for col in mtz.columns]
+        eliot.log_message(
+            message_type="debias:mtz_columns_found",
+            crystal_id=crystal_id,
+            columns=all_cols,
+        )
+
+        col_names = {col.label for col in mtz.columns}
+
+        f_label: Optional[str] = None
+        for f, sigf in _F_CANDIDATES:
+            if f in col_names and sigf in col_names:
+                f_label = f"{f},{sigf}"
+                break
+
+        rfree_label: Optional[str] = None
+        for name in _RFREE_CANDIDATES:
+            if name in col_names:
+                rfree_label = name
+                break
+
+        errors: List[str] = []
+
+        if f_label is None:
+            data_cols = sorted(
+                col.label for col in mtz.columns if col.type in ("F", "J")
+            )
+            errors.append(
+                f"  No recognised amplitude/intensity pair found.\n"
+                f"  F/I columns present: {data_cols or ['(none)']}\n"
+                f"  Set 'debias.mtz_f_labels' to e.g. \"FP,SIGFP\" to override."
+            )
+
+        if rfree_label is None:
+            int_cols = sorted(
+                col.label for col in mtz.columns if col.type == "I"
+            )
+            errors.append(
+                f"  No recognised R-free flag column found.\n"
+                f"  Integer columns present: {int_cols or ['(none)']}\n"
+                f"  Set 'debias.mtz_rfree_label' to e.g. \"FreeR_flag\" to override."
+            )
+
+        if errors:
+            raise ValueError(
+                f"[{crystal_id}] MTZ label detection failed for '{mtz_path}':\n"
+                + "\n".join(errors)
+            )
+
+        eliot.log_message(
+            message_type="debias:mtz_labels_detected",
+            crystal_id=crystal_id,
+            f_label=f_label,
+            rfree_label=rfree_label,
+        )
+
+        return f_label, rfree_label
 
 
 def generate_parameter_files(
@@ -55,6 +169,34 @@ def generate_parameter_files(
     )
     param_ready.save(str(dirs["processed"] / "ready_set.params"))
 
+    # Resolve MTZ labels once per crystal: config overrides take priority,
+    # then auto-detection.  Both must be resolved before generating params.
+    f_label: Optional[str] = cfg.debias.mtz_f_labels or None
+    rfree_label: Optional[str] = cfg.debias.mtz_rfree_label or None
+
+    f_source = "config_override" if f_label is not None else "auto_detected"
+    rfree_source = "config_override" if rfree_label is not None else "auto_detected"
+
+    if f_label is None or rfree_label is None:
+        detected_f, detected_rfree = _detect_mtz_labels(crystal[2], stem)
+        if f_label is None:
+            f_label = detected_f
+        if rfree_label is None:
+            rfree_label = detected_rfree
+
+    eliot.log_message(
+        message_type="debias:mtz_labels_resolved",
+        crystal_id=stem,
+        f_label=f_label,
+        f_label_source=f_source,
+        rfree_label=rfree_label,
+        rfree_label_source=rfree_source,
+    )
+    print(
+        f"[{stem}] MTZ labels — data: {f_label!r} ({f_source})"
+        f"  r_free: {rfree_label!r} ({rfree_source})"
+    )
+
     generated_files = []
     selections = stochastic_omission_sampler(
         structure_path=crystal[1],
@@ -84,6 +226,8 @@ def generate_parameter_files(
             "input.pdb.file_name", str(dirs["processed"] / f"{stem}_updated{ext}")
         )
         param_file.set("input.xray_data.file_name", crystal[2])
+        param_file.set("input.xray_data.labels", f_label)
+        param_file.set("input.xray_data.r_free_flags.label", rfree_label)
         param_file.set("output.file_name", str(job_result_dir / f"{run_id}.mtz"))
         param_file.set("output.job_title", run_id)
 

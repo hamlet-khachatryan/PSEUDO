@@ -26,7 +26,7 @@ from quantify.utils import (
 
 def load_ensemble(results_dir: Path, stem: str, map_cap: Optional[int]):
     """
-    Loads MTZ files into a 4D numpy array.
+    Loads MTZ files into a 4D numpy array
     """
 
     first_path = results_dir / f"{stem}_0" / f"{stem}_0.mtz"
@@ -54,7 +54,7 @@ def load_ensemble(results_dir: Path, stem: str, map_cap: Optional[int]):
 
 def save_map(array: np.ndarray, ref_grid: gemmi.FloatGrid, output_path: Path | str):
     """
-    Saves MTZ files as a ccp4 map.
+    Saves MTZ files as a ccp4 map
     """
     grid = gemmi.FloatGrid(array)
     grid.set_unit_cell(ref_grid.unit_cell)
@@ -67,7 +67,9 @@ def save_map(array: np.ndarray, ref_grid: gemmi.FloatGrid, output_path: Path | s
 
 
 def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optional[int]):
-    """Run quantification for a single experiment defined by a paths dict."""
+    """
+    Run quantification for a single experiment defined by a paths dict
+    """
     stem = paths["stem"]
     log_dir = paths["root"] / "logs" / "eliot"
     setup_eliot_logging(log_dir, stem)
@@ -144,13 +146,9 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
         with eliot.start_action(action_type="quantify:statistical_model", n_samples=20000):
             null_samples = statistical_model.sample_null_distribution(
                 snr_map=str(out_dir / f"{stem}_snr.ccp4"),
-                model_path=paths["original_pdb"],
+                model_path=paths["imginal_pdb"],
                 n_samples=20000,
             )
-
-            # Persist null distribution parameters in metadata so downstream analysis
-            # can derive per-alpha significance thresholds without re-sampling.
-            # Filename encodes the quantification run they correspond to.
             null_params = statistical_model.fit_null_distribution(null_samples)
             null_params_path = (
                 paths["metadata_dir"]
@@ -184,7 +182,6 @@ def run_quantification(
     input_path = Path(input_path)
 
     if stem:
-        # Explicit stem: treat input_path as a single experiment root.
         paths = get_experiment_paths(input_path, stem)
         paths["stem"] = stem
         _quantify_single(paths, force, k_factor, map_cap)

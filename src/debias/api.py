@@ -72,6 +72,8 @@ def run_debias_generation(
     always_omit: Optional[str] = None,
     iterations: Optional[int] = None,
     seed: Optional[int] = None,
+    mtz_f_labels: Optional[str] = None,
+    mtz_rfree_label: Optional[str] = None,
     slurm_partition: Optional[str] = None,
     slurm_cpus_per_task: Optional[int] = None,
     slurm_mem_per_cpu: Optional[str] = None,
@@ -104,6 +106,10 @@ def run_debias_generation(
         overrides.append(f"debias.always_omit={always_omit}")
     if seed is not None:
         overrides.append(f"debias.seed={seed}")
+    if mtz_f_labels is not None:
+        overrides.append(f"debias.mtz_f_labels={mtz_f_labels}")
+    if mtz_rfree_label is not None:
+        overrides.append(f"debias.mtz_rfree_label={mtz_rfree_label}")
 
     if slurm_partition:
         overrides.append(f"slurm.partition={slurm_partition}")

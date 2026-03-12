@@ -35,8 +35,13 @@ class DebiasParams:
     reflections_path: Optional[str] = None
     screening_path: Optional[str] = None
     sqlite_outcomes: Optional[str] = None  # specific for DLS XChem screening data
-    max_structures: Optional[int] = None # specific for DLS XChem screening data
+    max_structures: Optional[int] = None  # specific for DLS XChem screening data
     screening_chunk_size: int = 1000  # max omission jobs per sbatch array submission
+    # MTZ label overrides — set when auto-detection fails or picks the wrong column.
+    # mtz_f_labels:    comma-separated amplitude+sigma labels, e.g. "FP,SIGFP"
+    # mtz_rfree_label: R-free flag column name,              e.g. "FreeR_flag"
+    mtz_f_labels: Optional[str] = None
+    mtz_rfree_label: Optional[str] = None
 
 
 @dataclass

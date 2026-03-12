@@ -21,7 +21,7 @@ _SCORE_ATTR = {
 }
 
 def edia_colormap() -> mcolors.LinearSegmentedColormap:
-    """Red → pink → blue colormap matching the EDIA quality scale (0 – 1.2)."""
+    """Red → pink → blue colormap for quality scale (0 – zeta)"""
     colours = [
         (0.0, "#D62728"),
         (0.4 / 1.2, "#FF9896"),
@@ -32,7 +32,7 @@ def edia_colormap() -> mcolors.LinearSegmentedColormap:
 
 
 def pvalue_colormap() -> mcolors.LinearSegmentedColormap:
-    """Red → yellow → green colormap for p-value maps [0, 1]."""
+    """Red → yellow → green colormap for p-value maps [0, 1]"""
     colours = [
         (0.0, "#D62728"),
         (0.5, "#FFDD71"),
@@ -46,7 +46,8 @@ def extract_residue_scores(
     score_field: str = "musem",
     chain_id: Optional[str] = None,
 ) -> ResidueDict:
-    """Extract per-residue scores from a MUSEResult into a {seq_id: value} dict.
+    """
+    Extract per-residue scores from a MUSEResult into a {seq_id: value} dict.
 
     Args:
         result: Completed MUSEResult.
@@ -68,16 +69,12 @@ def plot_residue_profile(
     figsize: Tuple[float, float] = (14, 4),
     edia_thresholds: bool = True,
 ) -> Figure:
-    """Line plot of per-residue MUSE scores.
+    """
+    Line plot of per-residue MUSE scores.
 
     Args:
-        scores: {seq_id: score} dict, e.g. from extract_residue_scores().
-        title: Figure title.
-        figsize: Figure size in inches.
-        edia_thresholds: If True, draw dashed lines at 0.4 and 0.8.
-
-    Returns:
-        The matplotlib Figure.
+        scores: {seq_id: score} dict (from extract_residue_scores())
+        edia_thresholds: If True, draw dashed lines at 0.4 and 0.8
     """
     seqs = sorted(scores)
     vals = np.array([scores[s] for s in seqs], dtype=float)
@@ -105,18 +102,14 @@ def plot_water_support(
     title: str = "Water Density Support",
     figsize: Tuple[float, float] = (10, 5),
 ) -> Figure:
-    """Rank plot of per-water MUSE scores with a removal threshold line.
+    """
+    Rank plot of per-water MUSE scores with a removal threshold line
 
     Args:
-        result: Completed MUSEResult.
-        threshold: Waters below this score are coloured red.
-        chain_id: If given, restrict to this chain.
-        score_field: One of 'musem' (default), 'min', 'median', 'max'.
-        title: Figure title.
-        figsize: Figure size in inches.
-
-    Returns:
-        The matplotlib Figure.
+        result: Completed MUSEResult
+        threshold: Waters below this score are coloured red
+        chain_id: If given, restrict to this chain
+        score_field: One of 'musem' (default), 'min', 'median', 'max'
     """
     if score_field not in _SCORE_ATTR:
         raise ValueError(f"score_field must be one of {list(_SCORE_ATTR)}, got '{score_field}'.")

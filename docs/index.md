@@ -102,8 +102,16 @@ pseudo-debias generate-params --config run.yaml
 ```
 
 ```bash
-jid=$(sbatch --parsable submit_preprocessing.slurm) && \
-sbatch --dependency=afterok:$jid submit_omission.slurm
+# The exact command is printed by generate-params and logged via eliot.
+# Small runs (omission jobs ≤ screening_chunk_size):
+jid=$(sbatch --parsable submit_preprocessing.slurm)
+jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission.slurm)
+
+# Large screening runs — one line per chunk:
+jid=$(sbatch --parsable submit_preprocessing.slurm)
+jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission_0.slurm)
+jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission_1.slurm)
+# …
 ```
 
 ```bash

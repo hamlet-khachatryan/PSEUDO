@@ -48,13 +48,26 @@ def _detect_model_ext(processed_dir: Path, stem: str) -> str:
     return ".pdb"
 
 
+def _detect_original_model(processed_dir: Path, stem: str) -> Path:
+    """Return the path to the original model, searching by suffix if the canonical name is absent."""
+    for ext in (".pdb", ".cif"):
+        candidate = processed_dir / f"{stem}_original{ext}"
+        if candidate.exists():
+            return candidate
+    for ext in (".pdb", ".cif"):
+        matches = list(processed_dir.glob(f"*_original{ext}"))
+        if matches:
+            return matches[0]
+    return processed_dir / f"{stem}_original.pdb"
+
+
 def get_experiment_paths(root_dir: Path, stem: str) -> Dict[str, Path]:
     root_dir = Path(root_dir)
     ext = _detect_model_ext(root_dir / "processed", stem)
     return {
         "root": root_dir,
         "processed_pdb": root_dir / "processed" / f"{stem}_updated{ext}",
-        "original_pdb": root_dir / "processed" / f"{stem}_original{ext}",
+        "original_pdb": _detect_original_model(root_dir / "processed", stem),
         "omission_json": root_dir / "metadata" / f"{stem}_omission_map.json",
         "metadata_dir": root_dir / "metadata",
         "results_dir": root_dir / "results",

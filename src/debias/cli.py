@@ -75,6 +75,25 @@ def debias_cli():
         "Defaults to 1000."
     ),
 )
+# MTZ label overrides
+@click.option(
+    "--mtz_f_labels",
+    type=str,
+    default=None,
+    help=(
+        "Comma-separated amplitude+sigma column labels to use as observed data, "
+        "e.g. 'FP,SIGFP'. Set when auto-detection fails or picks the wrong array."
+    ),
+)
+@click.option(
+    "--mtz_rfree_label",
+    type=str,
+    default=None,
+    help=(
+        "R-free flag column name, e.g. 'FreeR_flag'. "
+        "Set when auto-detection fails or the MTZ contains multiple flag columns."
+    ),
+)
 # SLURM Resources
 @click.option("--partition", type=str, help="SLURM partition to use.")
 @click.option("--cpus_per_task", type=int, help="SLURM CPUs per task.")
@@ -99,6 +118,8 @@ def generate_params(
     sqlite_outcomes,
     max_structures,
     screening_chunk_size,
+    mtz_f_labels,
+    mtz_rfree_label,
     partition,
     cpus_per_task,
     mem_per_cpu,
@@ -139,6 +160,10 @@ def generate_params(
         overrides.append(f"debias.max_structures={max_structures}")
     if screening_chunk_size is not None:
         overrides.append(f"debias.screening_chunk_size={screening_chunk_size}")
+    if mtz_f_labels is not None:
+        overrides.append(f"debias.mtz_f_labels={mtz_f_labels}")
+    if mtz_rfree_label is not None:
+        overrides.append(f"debias.mtz_rfree_label={mtz_rfree_label}")
 
     if partition:
         overrides.append(f"slurm.partition={partition}")

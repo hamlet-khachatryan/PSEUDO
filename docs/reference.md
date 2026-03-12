@@ -19,6 +19,11 @@ All parameters for the three PSEUDO stages. CLI flags and YAML keys share the sa
 | `structure_path` | `str` | `null` | Absolute path to the input PDB or CIF file. Required if `screening_path` is not set. |
 | `reflections_path` | `str` | `null` | Absolute path to the input MTZ reflections file. Required if `screening_path` is not set. |
 | `screening_path` | `str` | `null` | Path to a CSV or SQLite (Diamond SoakDB) screening file for batch processing. |
+| `sqlite_outcomes` | `str` | `null` | Comma-separated substrings matched against `RefinementOutcome` in SoakDB files. No effect on CSV input. |
+| `max_structures` | `int` | `null` | Cap on structures taken from a SQLite file. No effect on CSV or single-structure input. |
+| `screening_chunk_size` | `int` | `1000` | Maximum number of omission jobs per sbatch array submission. Omission manifests are split into chunks of this size and submitted sequentially to avoid flooding the scheduler. |
+| `mtz_f_labels` | `str` | `null` | Override auto-detected observed-data labels. Comma-separated amplitude+sigma pair, e.g. `"FP,SIGFP"` or `"IMEAN,SIGIMEAN"`. Set when auto-detection fails or picks the wrong array. |
+| `mtz_rfree_label` | `str` | `null` | Override auto-detected R-free flag column, e.g. `"FreeR_flag"`. Set when the MTZ contains multiple flag columns or detection fails. |
 
 Either `structure_path` + `reflections_path` **or** `screening_path` must be provided.
 

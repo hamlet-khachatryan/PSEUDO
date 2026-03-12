@@ -68,7 +68,7 @@ def _resolve_map_path(paths: dict, k_factor: float, map_cap: Optional[int]) -> P
 
 
 def _resolve_model_path(paths: dict) -> Path:
-    """Return the processed model path, raising FileNotFoundError if absent."""
+    """Return the processed model path"""
     model_path = paths["processed_pdb"]
     if not model_path.exists():
         raise FileNotFoundError(
@@ -79,7 +79,7 @@ def _resolve_model_path(paths: dict) -> Path:
 
 
 def _load_null_params(paths: dict, k_factor: float, map_cap: int) -> Optional[dict]:
-    """Load fitted null-distribution parameters from metadata. Returns None if not found."""
+    """Load fitted null-distribution parameters from metadata"""
     null_params_path = (
         paths["metadata_dir"]
         / f"{paths['stem']}_null_params_k{k_factor}_cap{map_cap}.json"

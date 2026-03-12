@@ -14,15 +14,14 @@ from analyse.api import run_analysis
     "--stem",
     "-s",
     default=None,
-    help="Explicitly specify the experiment stem. "
-    "If omitted, the stem is inferred from the processed/ directory.",
+    help="Explicitly specify the experiment stem. If omitted, the stem is inferred from the processed/ directory.",
 )
 @click.option(
     "--map_path",
     "-m",
     default=None,
     type=click.Path(exists=True),
-    help="Path to a CCP4 map to use instead of the auto-discovered SNR map. "
+    help="Path to a CCP4 map to use instead of the auto-discovered SNR map"
     "If omitted, the SNR map from quantify_results/ is used.",
 )
 @click.option(
@@ -30,7 +29,7 @@ from analyse.api import run_analysis
     default=None,
     type=click.Path(exists=True),
     help="Path to a structure file (.pdb or .cif) to score instead of the "
-    "processed model from debias. Useful for scoring the original input model.",
+    "processed model from debias.",
 )
 @click.option(
     "--k_factor",
@@ -38,8 +37,8 @@ from analyse.api import run_analysis
     default=1.0,
     type=float,
     show_default=True,
-    help="K factor used during quantification. Used to locate the SNR map "
-    "in quantify_results/k_{k}_cap_{cap}/.",
+    help="K factor used during quantification run. Used to locate the SNR map "
+    "in specific quantify_results/k_{k}_cap_{cap}/.",
 )
 @click.option(
     "--map_cap",
@@ -47,7 +46,7 @@ from analyse.api import run_analysis
     default=50,
     type=int,
     show_default=True,
-    help="Map cap used during quantification. Used to locate the SNR map. "
+    help="Map cap used during quantification run. Used to locate the SNR map. "
     "Pass 0 to auto-detect the highest available cap.",
 )
 @click.option(
@@ -56,8 +55,7 @@ from analyse.api import run_analysis
     default=1,
     type=int,
     show_default=True,
-    help="Number of parallel worker processes for screening mode "
-    "(when input_path contains multiple experiments).",
+    help="Number of parallel worker processes for screening mode ",
 )
 @click.option(
     "--significance_alpha",
@@ -65,9 +63,8 @@ from analyse.api import run_analysis
     default=0.05,
     type=float,
     show_default=True,
-    help="Significance level for the null-distribution SNR threshold. "
-    "The SNR value at p=alpha is used as the MUSE classification threshold "
-    "(opia_threshold and missing_density_threshold). Default 0.05.",
+    help="Significance level for the null-distribution SNR threshold (p value threshold). "
+    "The SNR value at p=alpha is used as the MUSE classification threshold. Default p=0.05.",
 )
 def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap, num_processes, significance_alpha):
     """
