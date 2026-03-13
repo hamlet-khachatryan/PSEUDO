@@ -1,6 +1,5 @@
 import json
 import pytest
-from pathlib import Path
 
 from analyse.api import (
     _resolve_map_path,
@@ -19,6 +18,7 @@ def _paths(tmp_path, stem="target"):
         "root": tmp_path,
         "quantify_dir": tmp_path / "quantify_results",
         "processed_pdb": tmp_path / "processed" / f"{stem}_updated.pdb",
+        "original_pdb": tmp_path / "processed" / f"{stem}_original.pdb",
         "metadata_dir": tmp_path / "metadata",
         "results_dir": tmp_path / "results",
     }
@@ -73,17 +73,17 @@ def test_resolve_map_path_auto_detect_no_maps_raises(tmp_path):
 
 def test_resolve_model_path_missing_raises(tmp_path):
     paths = _paths(tmp_path)
-    with pytest.raises(FileNotFoundError, match="Processed model not found"):
+    with pytest.raises(FileNotFoundError, match="Original model not found"):
         _resolve_model_path(paths)
 
 
 def test_resolve_model_path_exists_returns_path(tmp_path):
     paths = _paths(tmp_path)
-    paths["processed_pdb"].parent.mkdir(parents=True)
-    paths["processed_pdb"].touch()
+    paths["original_pdb"].parent.mkdir(parents=True)
+    paths["original_pdb"].touch()
 
     result = _resolve_model_path(paths)
-    assert result == paths["processed_pdb"]
+    assert result == paths["original_pdb"]
 
 
 # ── _load_null_params ─────────────────────────────────────────────────────────

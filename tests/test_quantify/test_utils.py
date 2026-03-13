@@ -4,32 +4,8 @@ from pathlib import Path
 from quantify.utils import (
     find_experiments,
     infer_omission_mode,
-    infer_stem,
     validate_experiment,
 )
-
-def test_infer_stem_pdb(tmp_path):
-    processed = tmp_path / "processed"
-    processed.mkdir()
-    (processed / "my_target_updated.pdb").touch()
-    assert infer_stem(processed) == "my_target"
-
-
-def test_infer_stem_cif(tmp_path):
-    processed = tmp_path / "processed"
-    processed.mkdir()
-    (processed / "abc_updated.cif").touch()
-    assert infer_stem(processed) == "abc"
-
-
-def test_infer_stem_empty_dir(tmp_path):
-    processed = tmp_path / "processed"
-    processed.mkdir()
-    assert infer_stem(processed) is None
-
-
-def test_infer_stem_missing_dir(tmp_path):
-    assert infer_stem(tmp_path / "nonexistent") is None
 
 def _make_omission_map(mode: str):
     """Return a minimal omission-map dict for the given mode."""
@@ -90,10 +66,11 @@ def _make_experiment(root: Path, stem: str):
 
 
 def test_find_experiments_single(tmp_path):
-    _make_experiment(tmp_path, "target")
+    stem = tmp_path.name
+    _make_experiment(tmp_path, stem)
     results = list(find_experiments(str(tmp_path)))
     assert len(results) == 1
-    assert results[0]["stem"] == "target"
+    assert results[0]["stem"] == stem
 
 
 def test_find_experiments_screening(tmp_path):
