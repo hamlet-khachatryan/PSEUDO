@@ -2,8 +2,6 @@
 
 The **Analyse** module scores every heavy atom in the model against the debiased SNR map using **MUSE** (Model Uncertainty Score Estimator). MUSE adapts the EDIA methodology to any voxel-wise scalar field.
 
-For the full mathematical derivation see [Theory → MUSE](../theory.md#4-muse--model-uncertainty-score-estimator).
-
 ---
 
 ## Quick start
