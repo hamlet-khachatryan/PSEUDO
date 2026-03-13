@@ -71,16 +71,6 @@ Written to `<crystal>/analyse_results/`:
 
 ---
 
-## Score interpretation
-
-| MUSEm | Interpretation |
-|---|---|
-| ≥ 0.8 | Well-supported by the debiased map |
-| 0.4 – 0.8 | Moderate support; some uncertainty |
-| < 0.4 | Poor support; atom placement is questionable |
-
----
-
 ## Visualisation
 
 Load `{stem}_scored.pdb` in PyMOL and colour by B-factor:

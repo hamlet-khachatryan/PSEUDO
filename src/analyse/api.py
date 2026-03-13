@@ -223,7 +223,7 @@ def _analyse_single(
         with open(out_dir / f"{stem}_summary.json", "w") as fh:
             json.dump(summary, fh, indent=2)
 
-        write_scored_pdb(result, str(resolved_model), str(out_dir / f"{stem}_scored.pdb"), score_level="atom")
+        write_scored_pdb(result, str(resolved_model), str(out_dir / f"{stem}_scored.pdb"), score_level="atom", score_field = "score")
 
         elapsed = time.time() - start_time
         eliot.log_message(
