@@ -1,3 +1,8 @@
+---
+title: API Reference
+nav_order: 3
+---
+
 # Python API Reference
 
 Core functions for embedding PSEUDO in Python pipelines or notebooks.

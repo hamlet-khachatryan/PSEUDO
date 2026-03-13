@@ -1,3 +1,8 @@
+---
+title: Home
+nav_order: 1
+---
+
 # PSEUDO
 
 **PSEUDO** is a computational framework for debiasing and experimental uncertainty quantification in protein structural models resolved by molecular replacement.

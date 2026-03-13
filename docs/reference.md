@@ -1,3 +1,8 @@
+---
+title: Configuration Reference
+nav_order: 4
+---
+
 # Configuration Reference
 
 All parameters for the three PSEUDO stages. CLI flags and YAML keys share the same names.

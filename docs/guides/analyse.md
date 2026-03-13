@@ -1,3 +1,9 @@
+---
+title: Analyse
+parent: Guides
+nav_order: 3
+---
+
 # Analyse Guide
 
 The **Analyse** module scores every heavy atom in the model against the debiased SNR map using **MUSE** (Model Uncertainty Score Estimator). MUSE adapts the EDIA methodology to any voxel-wise scalar field.

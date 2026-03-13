@@ -1,3 +1,9 @@
+---
+title: Debias
+parent: Guides
+nav_order: 1
+---
+
 # Debias Guide
 
 The **Debias** module generates stochastic omit perturbation (STOMP) map ensembles. It produces SLURM sbatch scripts for HPC submission — it does not run Phenix directly.

@@ -1,3 +1,9 @@
+---
+title: Quantify
+parent: Guides
+nav_order: 2
+---
+
 # Quantify Guide
 
 The **Quantify** module analyses the ensemble of STOMP maps produced by `pseudo-debias`. It separates true crystallographic signal from phase bias and outputs debiased CCP4 maps.
