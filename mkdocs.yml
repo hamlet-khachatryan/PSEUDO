@@ -12,7 +12,7 @@ docs_dir: docs
 
 theme:
   name: mkdocs
-  custom_dir: docs/ßtheme
+  custom_dir: docs/theme
 
 nav:
   - Home: index.md
