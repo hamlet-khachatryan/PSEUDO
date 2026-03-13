@@ -4,7 +4,10 @@ description: Computational framework for debiasing and uncertainty quantificatio
 baseurl: "/PSEUDO"
 url: "https://hamlet-khachatryan.github.io"
 
-theme: just-the-docs
+remote_theme: just-the-docs/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
 
 # Repository link shown in header
 aux_links:
