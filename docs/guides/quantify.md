@@ -2,8 +2,6 @@
 
 The **Quantify** module analyses the ensemble of STOMP maps produced by `pseudo-debias`. It separates true crystallographic signal from phase bias and outputs debiased CCP4 maps.
 
-For the mathematical derivation see [Theory → Bias Separation](../theory.md#3-bias-separation--quantification).
-
 ---
 
 ## Quick start
@@ -98,7 +96,6 @@ Signal = mean(CleanedVector)
 Noise  = std(CleanedVector)
 ```
 
-See [Theory](../theory.md) for the full derivation.
 
 ---
 

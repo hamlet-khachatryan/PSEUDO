@@ -8,7 +8,6 @@ from quantify.utils import (
 )
 
 def _make_omission_map(mode: str):
-    """Return a minimal omission-map dict for the given mode."""
     if mode == "amino_acids":
         return {
             "A|10|ALA|CA": [0, 2, 4],

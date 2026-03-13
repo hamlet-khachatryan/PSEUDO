@@ -26,12 +26,10 @@ def test_compute_musem_all_perfect():
 
 
 def test_compute_musem_soft_min_pulls_toward_worst():
-    # With exponent -2, MUSEm is dominated by the lowest score
     scores_mixed = [1.0, 1.0, 0.1]
     scores_uniform = [0.7, 0.7, 0.7]
     musem_mixed = compute_musem(scores_mixed, DEFAULT_CFG)
     musem_uniform = compute_musem(scores_uniform, DEFAULT_CFG)
-    # musem_mixed should be pulled below the arithmetic mean (0.7)
     assert musem_mixed < musem_uniform
 
 
@@ -57,7 +55,6 @@ def test_compute_opia_all_poor():
 
 
 def test_compute_opia_all_well_supported_bonded():
-    # Chain: 0→1→2→3 all bonded, all score ≥ 0.8
     atoms = [_atom((0, 0, i), 0.9) for i in range(4)]
     bonds = {
         (0, 0, 0): [(0, 0, 1)],
@@ -70,14 +67,12 @@ def test_compute_opia_all_well_supported_bonded():
 
 
 def test_compute_opia_isolated_atoms_excluded():
-    # Two isolated atoms with high score — no bonds → component size 1 → excluded
     atoms = [_atom((0, 0, 0), 0.9), _atom((0, 0, 1), 0.9)]
     opia = compute_opia(atoms, {}, threshold=0.8)
     assert opia == 0.0
 
 
 def test_compute_opia_partial_support():
-    # 4 atoms; 2 bonded + well-supported (included), 2 poor (excluded)
     atoms = [
         _atom((0, 0, 0), 0.9),
         _atom((0, 0, 1), 0.9),

@@ -8,9 +8,6 @@ from analyse.api import (
     _infer_resolution,
 )
 
-
-# ── helpers ──────────────────────────────────────────────────────────────────
-
 def _paths(tmp_path, stem="target"):
     """Minimal paths dict mirroring get_experiment_paths output."""
     return {
@@ -22,9 +19,6 @@ def _paths(tmp_path, stem="target"):
         "metadata_dir": tmp_path / "metadata",
         "results_dir": tmp_path / "results",
     }
-
-
-# ── _resolve_map_path ─────────────────────────────────────────────────────────
 
 def test_resolve_map_path_missing_quantify_dir_raises(tmp_path):
     paths = _paths(tmp_path)
@@ -68,9 +62,6 @@ def test_resolve_map_path_auto_detect_no_maps_raises(tmp_path):
     with pytest.raises(FileNotFoundError, match="No SNR map found"):
         _resolve_map_path(paths, k_factor=1.0, map_cap=None)
 
-
-# ── _resolve_model_path ───────────────────────────────────────────────────────
-
 def test_resolve_model_path_missing_raises(tmp_path):
     paths = _paths(tmp_path)
     with pytest.raises(FileNotFoundError, match="Original model not found"):
@@ -84,9 +75,6 @@ def test_resolve_model_path_exists_returns_path(tmp_path):
 
     result = _resolve_model_path(paths)
     assert result == paths["original_pdb"]
-
-
-# ── _load_null_params ─────────────────────────────────────────────────────────
 
 def test_load_null_params_exact_file_present(tmp_path):
     paths = _paths(tmp_path)
@@ -116,9 +104,6 @@ def test_load_null_params_absent_returns_none(tmp_path):
 
     result = _load_null_params(paths, k_factor=1.0, map_cap=50)
     assert result is None
-
-
-# ── _infer_resolution ─────────────────────────────────────────────────────────
 
 def test_infer_resolution_no_mtz_raises(tmp_path):
     paths = _paths(tmp_path)
