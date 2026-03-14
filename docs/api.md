@@ -24,7 +24,7 @@ load_debias_config(
 ) -> DebiasConfig
 ```
 
-Load, merge and validate configuration. Precedence: `overrides` → `config_path` → internal defaults.
+Load, merge and validate configuration. Precedence: `overrides` → `config_path` → `internal defaults`.
 
 | Argument | Type | Description |
 |---|---|---|
@@ -107,14 +107,14 @@ run_quantification(
 
 Run bias separation on a single experiment or a screening workspace. In screening mode experiments are processed in parallel using `num_processes` workers.
 
-| Argument | Type | Default | Description |
-|---|---|---|---|
-| `input_path` | `Path \| str` | *required* | Workspace produced by `pseudo-debias`. |
-| `stem` | `str \| None` | auto | Explicit experiment stem; inferred if omitted. |
-| `force` | `bool` | `False` | Overwrite existing `quantify_results/`. |
-| `k_factor` | `float` | `1.5` | Radius multiplier K for ownership spheres. |
-| `map_cap` | `int \| None` | `None` | Use only the first N maps; `None` uses all. |
-| `num_processes` | `int` | `1` | Parallel workers for screening mode. |
+| Argument | Type | Default | Description                                    |
+|---|---|---|------------------------------------------------|
+| `input_path` | `Path \| str` | *required* | Workspace produced by `pseudo-debias`.         |
+| `stem` | `str \| None` | auto | Explicit experiment stem, inferred if omitted. |
+| `force` | `bool` | `False` | Overwrite existing `quantify_results/`.        |
+| `k_factor` | `float` | `1.5` | Radius multiplier K for ownership spheres.     |
+| `map_cap` | `int \| None` | `None` | Use only the first N maps, `None` uses all.    |
+| `num_processes` | `int` | `1` | Parallel workers for screening mode.           |
 
 **Example:**
 
@@ -138,7 +138,7 @@ from quantify.statistical_model import fit_null_distribution
 fit_null_distribution(null_snr: np.ndarray) -> dict[str, float]
 ```
 
-Fit a Student's t-distribution to null SNR samples. Returns `{"df": ..., "loc": ..., "scale": ...}`.
+Fit a t-distribution to null SNR samples. Returns `{"df": ..., "loc": ..., "scale": ...}`.
 
 ---
 
@@ -226,13 +226,13 @@ run_muse(
 
 Run the full MUSE scoring pipeline and return a `MUSEResult` containing per-atom scores, per-residue MUSEm scores, and the OPIA metric.
 
-| Argument | Type | Default | Description |
-|---|---|---|---|
-| `map_path` | `str` | *required* | Path to a CCP4/MRC map file. |
-| `structure_path` | `str` | *required* | Path to a PDB or mmCIF coordinate file. |
-| `resolution` | `float` | *required* | Map resolution in Å (drives atom radius lookup). |
-| `config` | `MUSEConfig \| None` | `None` | Scoring config; `None` uses `default_config()`. |
-| `skip_hydrogens` | `bool` | `True` | Exclude H/D atoms from scoring. |
+| Argument | Type | Default | Description                                                   |
+|---|---|---|---------------------------------------------------------------|
+| `map_path` | `str` | *required* | Path to a CCP4/MRC map file.                                  |
+| `structure_path` | `str` | *required* | Path to a PDB or mmCIF coordinate file.                       |
+| `resolution` | `float` | *required* | Map resolution in Å (drives atom radius lookup).              |
+| `config` | `MUSEConfig \| None` | `None` | Scoring config (`None` uses `default_config()`).              |
+| `skip_hydrogens` | `bool` | `True` | Exclude H/D atoms from scoring.                               |
 | `run_error_diagnostics` | `bool` | `True` | Compute clash, missing-density and unaccounted-density flags. |
 
 **Example:**
@@ -343,7 +343,7 @@ Returns a `MUSEConfig` with all paper-derived defaults. Suitable for standard el
 snr_map_config(zeta: float = 5.0) -> MUSEConfig
 ```
 
-Returns a `MUSEConfig` preset for SNR CCP4 maps produced by `pseudo-quantify`. Normalization is disabled; the truncation cap is set to 5.0. This is the config used automatically by `pseudo-analyse`.
+Returns a `MUSEConfig` preset for SNR CCP4 maps produced by `pseudo-quantify`. Normalization is disabled, the truncation cap is set to 5.0. This is the config used automatically by `pseudo-analyse`.
 
 ---
 

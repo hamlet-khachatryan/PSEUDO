@@ -6,7 +6,7 @@ nav_order: 2
 
 # Quantify Guide
 
-The **Quantify** module analyses the ensemble of STOMP maps produced by `pseudo-debias`. It separates true crystallographic signal from phase bias and outputs debiased CCP4 maps.
+The **Quantify** module analyses the ensemble of STOMP maps produced by `pseudo-debias`. It separates true crystallographic signal from bias and outputs debiased CCP4 maps.
 
 ---
 
@@ -26,13 +26,13 @@ pseudo-quantify --input_path /scratch/results/my_experiment/target_5e5z
 
 ## CLI options
 
-| Flag | Short | Default | Description |
-|---|---|---|---|
-| `--input_path` | `-p` | *required* | Workspace root produced by `pseudo-debias`. |
-| `--stem` | `-s` | auto | Explicit experiment stem; inferred if omitted. |
+| Flag | Short | Default | Description                                     |
+|---|---|---|-------------------------------------------------|
+| `--input_path` | `-p` | *required* | Workspace root produced by `pseudo-debias`.     |
+| `--stem` | `-s` | auto | Explicit experiment stem (inferred if omitted). |
 | `--k_factor` | `-k` | `1.0` | Radius multiplier K for atom ownership spheres. |
-| `--map_cap` | `-c` | `50` | Limit to the first N maps (convergence testing). |
-| `--force` | `-f` | `False` | Overwrite existing `quantify_results/`. |
+| `--map_cap` | `-c` | `50` | Limit to the first N maps. |
+| `--force` | `-f` | `False` | Overwrite existing `quantify_results/`.         |
 
 ---
 

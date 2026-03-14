@@ -6,7 +6,7 @@ nav_order: 3
 
 # Analyse Guide
 
-The **Analyse** module scores every heavy atom in the model against the debiased SNR map using **MUSE** (Model Uncertainty Score Estimator). MUSE adapts the EDIA methodology to any voxel-wise scalar field.
+The **Analyse** module scores every heavy atom in the model against the debiased SNR map using **MUSE** (Model Uncertainty Score Estimator). MUSE adapts the EDIA methodology to any scalar field.
 
 ---
 
@@ -82,7 +82,7 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor:
 ```text
 # PyMOL
 load target_scored.pdb
-spectrum b, red_white_blue, minimum=40, maximum=80
+spectrum b, red_white_blue
 ```
 
 ### Python plots
@@ -102,11 +102,11 @@ fig2.savefig("water_support.pdf")
 
 ## Significance threshold
 
-When null-distribution parameters are present in `metadata/` (produced by `pseudo-quantify`), `pseudo-analyse` automatically sets the OPIA and missing-density thresholds to the SNR value at `p = significance_alpha`. This adapts the scoring to the actual noise floor of the experiment rather than relying on fixed paper defaults.
+When null-distribution parameters are present in `metadata/` (produced by `pseudo-quantify`), `pseudo-analyse` automatically sets the OPIA and missing-density thresholds to the SNR value at `p = significance_alpha`. This adapts the scoring to the actual noise floor of the experiment.
 
 ---
 
-## MUSE configuration (advanced)
+## MUSE configuration
 
 ```python
 from analyse.muse.config import MUSEConfig, AggregationConfig, MapNormalizationConfig
@@ -137,7 +137,7 @@ Each atom in the output carries three boolean flags:
 
 ## HPC / SLURM submission
 
-For large screening workspaces, wrap the command in `sbatch` and use `--num_processes` to parallelise across crystals within the job:
+For fragment screening workspaces, wrap the command in `sbatch` and use `--num_processes` to parallelise across crystals within the job:
 
 ```bash
 sbatch --partition cs05r \

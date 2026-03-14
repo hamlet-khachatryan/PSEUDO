@@ -6,13 +6,13 @@ nav_order: 1
 
 # Debias Guide
 
-The **Debias** module generates stochastic omit perturbation (STOMP) map ensembles. It produces SLURM sbatch scripts for HPC submission — it does not run Phenix directly.
+The **Debias** module generates stochastic omit perturbation (STOMP) map ensembles. It produces SLURM sbatch scripts for HPC submission.
 
 ---
 
 ## Configuration precedence
 
-Values are resolved in this order (highest wins):
+Values are resolved in this order:
 
 1. CLI flags / Python API overrides
 2. External YAML config file
@@ -22,7 +22,7 @@ Values are resolved in this order (highest wins):
 
 ## Quick start
 
-**Single structure — CLI flags only:**
+**Single structure (CLI flags only):**
 
 ```bash
 pseudo-debias generate-params \
@@ -112,7 +112,7 @@ The CSV must contain `PDB` (or `CIF`/`structure`) and `MTZ` columns. For SQLite 
 
 Each crystal produces ~50 omission parameter files, so a large screening run can generate tens of thousands of omission jobs. Submitting these as a single array risks overwhelming the scheduler.
 
-`screening_chunk_size` (default `1000`) caps the number of omission jobs per sbatch array. The full omission manifest is split into chunks of that size; each chunk gets its own `submit_omission_N.slurm` script and they are chained with `--dependency=afterok` so only one chunk runs at a time.
+`screening_chunk_size` (default `1000`) caps the number of omission jobs per sbatch array. The full omission manifest is split into chunks of that size, each chunk gets its own `submit_omission_N.slurm` script and they are chained with `--dependency=afterok` so only one chunk runs at a time.
 
 ```bash
 pseudo-debias generate-params \
@@ -138,7 +138,7 @@ Before generating omission `.params` files, PSEUDO reads each MTZ file with gemm
 
 ### Auto-detection priority
 
-**Observed data** (first matching pair wins):
+**Observed data**:
 
 | Priority | F column | SIGF column |
 |---|---|---|
@@ -155,8 +155,6 @@ Before generating omission `.params` files, PSEUDO reads each MTZ file with gemm
 
 **R-free flag** (first matching column wins):
 `FreeR_flag` → `FREE` → `FREER` → `R-free-flags` → `Status`
-
-`Status` is last because it is a character column in some MTZ files and serves as a free-set indicator only when no dedicated flag column exists. When both `FreeR_flag` and `Status` are present, `FreeR_flag` is always preferred.
 
 The resolved labels are printed to stdout and recorded in the eliot log under `debias:mtz_labels_resolved`. The full column inventory of each MTZ is logged under `debias:mtz_columns_found`.
 
@@ -209,14 +207,14 @@ debias:
 ├── sbatch/
 │   ├── submit_preprocessing.slurm
 │   ├── submit_omission.slurm        # single chunk (small runs)
-│   ├── submit_omission_0.slurm      # ┐
-│   ├── submit_omission_1.slurm      # ├ chunked (large screening runs)
-│   ├── ...                          # ┘
+│   ├── submit_omission_0.slurm      # 
+│   ├── submit_omission_1.slurm      #  chunked (large screening runs)
+│   ├── ...                          # 
 │   ├── preprocessing_manifest.txt
 │   ├── omit_manifest.txt            # full reference manifest (always written)
-│   ├── omit_manifest_0.txt          # ┐
-│   ├── omit_manifest_1.txt          # ├ per-chunk manifests
-│   └── ...                          # ┘
+│   ├── omit_manifest_0.txt          # 
+│   ├── omit_manifest_1.txt          #  per-chunk manifests
+│   └── ...                          # 
 │
 ├── logs/                          # SLURM .out and .err files
 │

@@ -62,19 +62,18 @@ All other parameters fall back to built-in defaults (see [Configuration Referenc
 
 PSEUDO accepts three input modes for the debias stage:
 
-| Mode | Required fields | Behaviour |
-|---|---|---|
-| **Single structure** | `structure_path` + `reflections_path` | Always processed as-is |
-| **CSV screening** | `screening_path` (`.csv`) | All rows always processed; must contain `PDB`/`CIF` and `MTZ` columns |
-| **SQLite screening** | `screening_path` (`.sqlite`) | Diamond SoakDB format; supports outcome filtering and structure count capping |
+| Mode | Required fields | Behaviour                                                                     |
+|---|---|-------------------------------------------------------------------------------|
+| **Single structure** | `structure_path` + `reflections_path` | Always processed as-is                                                        |
+| **CSV screening** | `screening_path` (`.csv`) | Must contain `PDB`/`CIF` and `MTZ` columns (all rows always processed)        |
+| **SQLite screening** | `screening_path` (`.sqlite`) | Diamond SoakDB format, supports outcome filtering and structure count capping |
 
 ### SQLite-specific options
 
 `sqlite_outcomes` — comma-separated substrings matched against the `RefinementOutcome` column. Accepted values:
 
 ```text
-Analysis Pending, PANDDA model - minor, In Refinement,
-CompChem ready, Deposition ready, Deposited, Analysed & Rejected
+CompChem ready, Deposition ready, Deposited
 ```
 
 `max_structures` — cap on the number of structures processed from the SQLite file. Set to `null` (default) to process all matching entries.
@@ -84,7 +83,7 @@ Example config for SQLite with filtering:
 ```yaml
 debias:
   screening_path: "/data/soakdb.sqlite"
-  sqlite_outcomes: "CompChem ready, Deposition ready, Deposited"  # comma-separated string
+  sqlite_outcomes: "CompChem ready, Deposition ready, Deposited"
   max_structures: 50
 ```
 
@@ -107,12 +106,12 @@ pseudo-debias generate-params --config run.yaml
 ```
 
 ```bash
-# The exact command is printed by generate-params and logged via eliot.
+# The exact command is printed by generate-params.
 # Small runs (omission jobs ≤ screening_chunk_size):
 jid=$(sbatch --parsable submit_preprocessing.slurm)
 jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission.slurm)
 
-# Large screening runs — one line per chunk:
+# Large screening runs:
 jid=$(sbatch --parsable submit_preprocessing.slurm)
 jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission_0.slurm)
 jid=$(sbatch --parsable --dependency=afterok:$jid submit_omission_1.slurm)
@@ -143,7 +142,7 @@ Analysis results land in `<work_dir>/<run_name>/<crystal>/analyse_results/`:
 
 Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density support across the model.
 
----3
+---
 
 ## Logging
 
@@ -175,18 +174,14 @@ For a quantify or analyse log:
 eliot-tree /scratch/my_project/my_experiment/XTAL-0001/logs/eliot/XTAL-0001.ndjson
 ```
 
-`eliot-tree` is installed automatically with PSEUDO's dependencies. Pass `--help` to see filtering and formatting options:
-
-```bash
-eliot-tree --help
-```
+Pass ``eliot-tree --help`` to see filtering and formatting options.
 
 ---
 
 ## Further reading
 
 - [Debias guide](guides/debias.md) — STOMP map generation, directory layout, batch screening
-- [Quantify guide](guides/quantify.md) — bias separation algorithm, ownership logic
+- [Quantify guide](guides/quantify.md) — bias separation algorithm
 - [Analyse guide](guides/analyse.md) — MUSE scoring methodology, configuration
 - [Configuration reference](reference.md) — every parameter for all three stages
 
@@ -194,7 +189,7 @@ eliot-tree --help
 
 ## Citation
 
-If you use this code — including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please use the following citation (preprint available soon):
+If you use this code, including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please use the following citation (preprint available soon):
 
 ```bibtex
 @software{khachatryan2026pseudo,
