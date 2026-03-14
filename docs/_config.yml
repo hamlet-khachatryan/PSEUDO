@@ -22,6 +22,12 @@ kramdown:
     block:
       line_numbers: false
 
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
 exclude:
   - Gemfile
   - Gemfile.lock
