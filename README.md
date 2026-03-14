@@ -1,5 +1,11 @@
 # PSEUDO
 
+[![CI](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/ci.yml/badge.svg)](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/ci.yml)
+[![Docs](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/docs.yml/badge.svg)](https://hamlet-khachatryan.github.io/PSEUDO/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/hamlet-khachatryan/PSEUDO)](https://github.com/hamlet-khachatryan/PSEUDO/blob/main/LICENSE)
+[![Status](https://img.shields.io/badge/status-beta-orange)](https://github.com/hamlet-khachatryan/PSEUDO)
+
 **PSEUDO** is a computational framework for debiasing and experimental uncertainty quantification in protein structural models resolved by molecular replacement.
 
 It provides a three-stage pipeline that runs on HPC clusters via SLURM:
