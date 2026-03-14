@@ -22,8 +22,8 @@ kramdown:
     block:
       line_numbers: false
 
-# Exclude files from build
 exclude:
   - Gemfile
   - Gemfile.lock
+  - vendor/
   - theory.md
