@@ -1,20 +1,14 @@
 title: PSEUDO
 description: Computational framework for debiasing and uncertainty quantification in protein structural models resolved by molecular replacement.
 
-baseurl: "/PSEUDO"
-url: "https://hamlet-khachatryan.github.io"
-
 theme: just-the-docs
 
-# Repository link shown in header
 aux_links:
   "GitHub":
     - "https://github.com/hamlet-khachatryan/PSEUDO"
 
-# Footer
 footer_content: "Copyright &copy; 2026 Hamlet Khachatryan, Conor Wild, Frank von Delft."
 
-# Code highlighting
 highlighter: rouge
 kramdown:
   syntax_highlighter: rouge
