@@ -145,7 +145,7 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density su
 
 ## Citation
 
-If you use this code — including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please cite the following paper (preprint available soon):
+If you use this code — including STOMP maps, the PSEUDO platform, or MUSE scores — in your research, please use the following citation (preprint available soon):
 
 ```bibtex
 @software{khachatryan2026pseudo,
