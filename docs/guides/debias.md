@@ -253,4 +253,4 @@ debias:
 
 ## Parameter reference
 
-See [Configuration Reference — Debias](../reference.md#debias-pseudo-debias).
+See [Configuration Reference — Debias](../reference#debias-pseudo-debias).

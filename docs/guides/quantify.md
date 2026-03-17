@@ -124,4 +124,4 @@ sbatch --partition cs05r \
 
 ## Parameter reference
 
-See [Configuration Reference — Quantify](../reference.md#quantify-pseudo-quantify).
+See [Configuration Reference — Quantify](../reference#quantify-pseudo-quantify).

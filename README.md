@@ -57,7 +57,7 @@ slurm:
   partition: "cs05r"
 ```
 
-All other parameters fall back to built-in defaults (see [Configuration Reference](reference.md)).
+All other parameters fall back to built-in defaults (see [Configuration Reference](https://hamlet-khachatryan.github.io/PSEUDO/reference)).
 
 ---
 
@@ -142,10 +142,10 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density su
 
 ## Further reading
 
-- [Debias guide](guides/debias.md) — STOMP map generation, directory layout, batch screening
-- [Quantify guide](guides/quantify.md) — bias separation algorithm, ownership logic
-- [Analyse guide](guides/analyse.md) — MUSE scoring methodology, configuration
-- [Configuration reference](reference.md) — every parameter for all three stages
+- [Debias guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/debias) — STOMP map generation, directory layout, batch screening
+- [Quantify guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/quantify) — bias separation algorithm, ownership logic
+- [Analyse guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/analyse) — MUSE scoring methodology, configuration
+- [Configuration reference](https://hamlet-khachatryan.github.io/PSEUDO/reference) — every parameter for all three stages
 
 ---
 

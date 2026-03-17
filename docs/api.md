@@ -367,7 +367,7 @@ config = MUSEConfig(
 result = run_muse("map.ccp4", "model.pdb", resolution=1.8, config=config)
 ```
 
-See [Configuration Reference](reference.md#muse-scoring-parameters-museconfig) for all fields.
+See [Configuration Reference](reference#muse-scoring-parameters-museconfig) for all fields.
 
 ---
 

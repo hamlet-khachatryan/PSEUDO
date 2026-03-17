@@ -7,8 +7,6 @@ nav_order: 1
   <img src="{{ '/assets/images/pseudo_logo_light.svg' | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
 </p>
 
-# PSEUDO
-
 **PSEUDO** is a computational framework for debiasing and experimental uncertainty quantification in protein structural models resolved by molecular replacement.
 
 It provides a three-stage pipeline that runs on HPC clusters via SLURM:
