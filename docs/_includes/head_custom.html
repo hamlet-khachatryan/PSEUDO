@@ -1,0 +1,10 @@
+<!-- Inline script: apply saved/preferred theme before first paint to avoid flash -->
+<script>
+(function () {
+  var saved = localStorage.getItem('pseudo-theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (saved === 'dark' || (!saved && prefersDark)) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>

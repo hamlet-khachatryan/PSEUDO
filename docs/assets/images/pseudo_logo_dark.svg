@@ -1,0 +1,55 @@
+<svg width="520" height="150" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#e8f4ff"/>
+      <stop offset="65%"  stop-color="#c8dff5"/>
+      <stop offset="100%" stop-color="#9bbcd8"/>
+    </linearGradient>
+    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="520" height="150" rx="14" fill="#060d1a"/>
+  <rect width="520" height="150" rx="14" fill="none" stroke="#1b3356" stroke-width="1.5"/>
+
+  <text
+    x="22" y="113"
+    textLength="336" lengthAdjust="spacingAndGlyphs"
+    font-family="'Arial Black', 'Franklin Gothic Heavy', 'Impact', Arial, sans-serif"
+    font-size="108" font-weight="300"
+    fill="url(#tg)">PSEUD</text>
+
+  <g filter="url(#glow)">
+    <svg x="364" y="19" width="112" height="112" viewBox="0 0 680 680">
+      <defs>
+        <clipPath id="disc-o">
+          <circle cx="340" cy="340" r="270"/>
+        </clipPath>
+      </defs>
+      <circle cx="340" cy="340" r="270" fill="#0e1a2e" opacity="0.92"/>
+      <g clip-path="url(#disc-o)">
+        <line x1="340" y1="72" x2="340" y2="608" stroke="#2d5a8a" stroke-width="8.7" opacity="0.9"/>
+        <line x1="72" y1="340" x2="608" y2="340" stroke="#2d5a8a" stroke-width="8.7" opacity="0.9"/>
+        <circle cx="340" cy="340" r="224" fill="none" stroke="#2d5a8a" stroke-width="8.7" opacity="0.7"/>
+        <line x1="202" y1="118" x2="468" y2="558" stroke="#2d5a8a" stroke-width="6.2" stroke-dasharray="38,30" opacity="0.55"/>
+        <circle cx="340" cy="340" r="18" fill="#3a6a9a" opacity="0.95"/>
+        <circle cx="262" cy="214" r="20" fill="#f0a500" opacity="0.95"/>
+      </g>
+      <path d="M 514 160 A 248 248 0 0 0  98 400" fill="none" stroke="#f0a500" stroke-width="52" stroke-linecap="round" opacity="0.10"/>
+      <path d="M 474 132 A 242 242 0 0 0 100 342" fill="none" stroke="#f0a500" stroke-width="38" stroke-linecap="round" opacity="0.22"/>
+      <path d="M 406 114 A 234 234 0 0 0 114 274" fill="none" stroke="#f0a500" stroke-width="24" stroke-linecap="round" opacity="0.44"/>
+      <path d="M 350 117 A 224 224 0 0 0 147 226" fill="none" stroke="#f0a500" stroke-width="14" stroke-linecap="round" opacity="0.74"/>
+      <path d="M 291 136 A 212 212 0 0 0 195 193" fill="none" stroke="#ffc235" stroke-width="34" stroke-linecap="round" opacity="0.99"/>
+      <path d="M 320 584 A 246 246 0 0 0 562 450" fill="none" stroke="#58a6ff" stroke-width="34" stroke-linecap="round" opacity="0.14"/>
+      <path d="M 374 578 A 238 238 0 0 0 530 488" fill="none" stroke="#58a6ff" stroke-width="23" stroke-linecap="round" opacity="0.36"/>
+      <path d="M 413 560 A 230 230 0 0 0 500 512" fill="none" stroke="#58a6ff" stroke-width="13" stroke-linecap="round" opacity="0.70"/>
+      <path d="M 432 540 A 218 218 0 0 0 472 514" fill="none" stroke="#8dc8ff" stroke-width="34" stroke-linecap="round" opacity="0.99"/>
+      <circle cx="340" cy="340" r="265" fill="none" stroke="#b0cde8" stroke-width="9" opacity="0.55"/>
+    </svg>
+  </g>
+</svg>

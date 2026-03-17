@@ -1,6 +1,8 @@
 title: PSEUDO
 description: Computational framework for debiasing and uncertainty quantification in protein structural models resolved by molecular replacement.
 
+logo: "/assets/images/pseudo_logo_circular.svg"
+
 theme: just-the-docs
 
 aux_links:

@@ -3,6 +3,11 @@ title: Home
 nav_order: 1
 ---
 
+<p>
+  <img class="logo-light" src="{{ '/assets/images/pseudo_logo_light.svg' | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
+  <img class="logo-dark"  src="{{ '/assets/images/pseudo_logo_dark.svg'  | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
+</p>
+
 # PSEUDO
 
 **PSEUDO** is a computational framework for debiasing and experimental uncertainty quantification in protein structural models resolved by molecular replacement.
