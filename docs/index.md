@@ -3,9 +3,8 @@ title: Home
 nav_order: 1
 ---
 
-<p>
-  <img class="logo-light" src="{{ '/assets/images/pseudo_logo_light.svg' | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
-  <img class="logo-dark"  src="{{ '/assets/images/pseudo_logo_dark.svg'  | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
+<p align="center">
+  <img src="{{ '/assets/images/pseudo_logo_light.svg' | relative_url }}" alt="PSEUDO" width="400" style="max-width:100%">
 </p>
 
 # PSEUDO
@@ -59,7 +58,7 @@ slurm:
   partition: "cs05r"
 ```
 
-All other parameters fall back to built-in defaults (see [Configuration Reference](reference.md)).
+All other parameters fall back to built-in defaults (see [Configuration Reference](reference)).
 
 ---
 
@@ -185,10 +184,10 @@ Pass ``eliot-tree --help`` to see filtering and formatting options.
 
 ## Further reading
 
-- [Debias guide](guides/debias.md) — STOMP map generation, directory layout, batch screening
-- [Quantify guide](guides/quantify.md) — bias separation algorithm
-- [Analyse guide](guides/analyse.md) — MUSE scoring methodology, configuration
-- [Configuration reference](reference.md) — every parameter for all three stages
+- [Debias guide](guides/debias) — STOMP map generation, directory layout, batch screening
+- [Quantify guide](guides/quantify) — bias separation algorithm
+- [Analyse guide](guides/analyse) — MUSE scoring methodology, configuration
+- [Configuration reference](reference) — every parameter for all three stages
 
 ---
 

@@ -1,8 +1,10 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)"  srcset="docs/assets/images/pseudo_logo_dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/images/pseudo_logo_light.svg">
-  <img src="docs/assets/images/pseudo_logo_light.svg" alt="PSEUDO" width="400">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"  srcset="docs/assets/images/pseudo_logo_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/images/pseudo_logo_light.svg">
+    <img src="docs/assets/images/pseudo_logo_light.svg" alt="PSEUDO" width="400">
+  </picture>
+</p>
 
 [![CI](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/ci.yml/badge.svg)](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/ci.yml)
 [![Docs](https://github.com/hamlet-khachatryan/PSEUDO/actions/workflows/docs.yml/badge.svg)](https://hamlet-khachatryan.github.io/PSEUDO/)
