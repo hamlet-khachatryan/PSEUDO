@@ -49,6 +49,7 @@ cli = [
 pseudo-debias = "debias.cli:debias_cli"
 pseudo-quantify = "quantify.cli:quantify_cli"
 pseudo-analyse = "analyse.cli:analyse_cli"
+pseudo-screen-report = "analyse.cli:screen_report_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
