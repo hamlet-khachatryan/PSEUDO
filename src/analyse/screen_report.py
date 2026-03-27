@@ -118,12 +118,12 @@ def _categorise(res_name: str) -> str:
     rn = res_name.upper()
     if rn in _WATER_NAMES:
         return "water"
-    _AA = {
+    amino_set = {
         "ALA","ARG","ASN","ASP","CYS","GLN","GLU","GLY","HIS","ILE",
         "LEU","LYS","MET","PHE","PRO","SER","THR","TRP","TYR","VAL",
         "SEC","PYL","MSE",
     }
-    return "protein" if rn in _AA else "other_solvent"
+    return "protein" if rn in amino_set else "other_solvent"
 
 
 def analyse_lig_neighbourhood(
