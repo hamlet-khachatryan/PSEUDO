@@ -83,12 +83,11 @@ class SiteOccupancy:
 
 def _classify(residue_name: str, element_name: str) -> OccupancyType:
     rn = residue_name.upper()
-    el = element_name.upper()
     if rn in _WATER_NAMES:
         return OccupancyType.WATER
     if rn in _STANDARD_AA:
         return OccupancyType.PROTEIN
-    if el in _ION_ELEMENTS:
+    if rn in _ION_RESIDUE_NAMES:
         return OccupancyType.ION
     return OccupancyType.LIGAND
 
