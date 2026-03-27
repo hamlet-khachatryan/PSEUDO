@@ -547,6 +547,152 @@ def _fig_fragment_correlation(
 
 
 # ---------------------------------------------------------------------------
+# Figure 5 — Mean SNR vs. mean pairwise KL divergence
+# ---------------------------------------------------------------------------
+
+def _fig_snr_vs_kl(
+    sites: List[WaterSite],
+    consistencies: List[WaterSiteConsistency],
+    output_path: Path,
+) -> None:
+    """
+    Mean SNR vs. mean pairwise KL divergence between per-structure SNR
+    distributions.
+
+    For each water site the per-structure SNR values within the sphere are
+    treated as a Gaussian distribution (parameterised by mean and std).  The
+    symmetric KL divergence is computed for every pair of structures, and the
+    mean over all pairs is taken as the y-axis value.
+
+    Axes
+    ----
+    X — mean SNR across screen (site-radius sphere): signal strength.
+    Y — mean pairwise symmetric KL divergence (log scale): how different the
+        within-sphere SNR distributions are from one another across structures.
+        Low = distributions are nearly identical in every experiment.
+        High = distributions vary substantially between structures.
+
+    Colour — water frequency.
+    Size   — n_waters (number of modelled waters contributing to the site).
+
+    Interpretation
+    --------------
+    Bottom-right (high SNR, low KL): strong and reproducible signal — the
+        electron density at this site looks virtually the same in every
+        crystal.  These are the most structurally trustworthy water sites.
+
+    Top-right (high SNR, high KL): strong on average but the distribution
+        shape varies widely — the site may be perturbed by ligand binding or
+        partial occupancy in some experiments.
+
+    Bottom-left (low SNR, low KL): consistently weak signal — coherent noise
+        or very shallow density, likely surface / disordered waters.
+
+    Top-left (low SNR, high KL): noisy and inconsistent — discard.
+
+    Unlike CV (which only compares scalar means), KL divergence captures
+    differences in both the mean and the spread of the within-sphere SNR
+    distribution, making it a more sensitive measure of reproducibility.
+    """
+    site_ids, snr, _, freq, n_w = _collect(sites, consistencies)
+    kl = np.array([c.mean_pairwise_kl for c in consistencies], dtype=float)
+
+    valid = np.isfinite(snr) & np.isfinite(kl) & (kl > 0)
+
+    with plt.rc_context(_NATURE_RC):
+        fig, ax = plt.subplots(figsize=(_W1, _W1 * 0.92))
+
+        norm = Normalize(vmin=0, vmax=1)
+        cmap = plt.get_cmap("plasma")
+
+        sc = ax.scatter(
+            snr[valid], kl[valid],
+            c=freq[valid], cmap=cmap, norm=norm,
+            s=_marker_area(n_w)[valid],
+            alpha=0.80, linewidths=0.35, edgecolors="#333333", zorder=3,
+        )
+
+        ax.set_yscale("log")
+        _guide(ax, x=SNR_NOISE_FLOOR)
+
+        _clean_ax(ax)
+        ax.set_xlabel("Mean SNR across screen  (site-radius sphere)")
+        ax.set_ylabel("Mean pairwise KL divergence  (log scale)")
+        ax.set_title("Signal strength vs. distributional consistency")
+
+        # Soft region labels using axes-fraction coordinates so they stay
+        # inside the panel regardless of data range
+        _kw = dict(fontsize=5.5, color="#AAAAAA", ha="center", va="center",
+                   style="italic", transform=ax.transAxes, zorder=0)
+        ax.text(0.78, 0.88, "strong signal\nvariable distributions", **_kw)
+        ax.text(0.78, 0.12, "strong signal\nreproducible distributions", **_kw)
+        ax.text(0.22, 0.12, "weak signal\nreproducible", **_kw)
+        ax.text(0.22, 0.88, "noise", **_kw)
+
+        _colorbar(fig, ax, ScalarMappable(norm=norm, cmap=cmap), "Water frequency")
+
+        # Rank top sites by SNR / KL — highest SNR with lowest KL
+        composite = np.where(valid, snr / (kl + 1e-9), -np.inf)
+        _label_top(ax, site_ids, snr, kl, composite)
+
+        _size_legend(ax, n_w)
+
+        fig.savefig(output_path)
+        plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
+# Figure 6 — SNR vs. KL divergence, plain (no colour / size encoding)
+# ---------------------------------------------------------------------------
+
+def _fig_snr_vs_kl_plain(
+    sites: List[WaterSite],
+    consistencies: List[WaterSiteConsistency],
+    output_path: Path,
+) -> None:
+    """
+    Same axes as _fig_snr_vs_kl but every point is drawn identically —
+    no colour or size encoding.  This makes the overall scatter shape and
+    the position of annotated sites easier to read without visual distraction.
+    """
+    site_ids, snr, _, _, _ = _collect(sites, consistencies)
+    kl = np.array([c.mean_pairwise_kl for c in consistencies], dtype=float)
+
+    valid = np.isfinite(snr) & np.isfinite(kl) & (kl > 0)
+
+    with plt.rc_context(_NATURE_RC):
+        fig, ax = plt.subplots(figsize=(_W1, _W1 * 0.92))
+
+        ax.scatter(
+            snr[valid], kl[valid],
+            color="#2166AC",
+            s=18,
+            alpha=0.60, linewidths=0.3, edgecolors="#333333", zorder=3,
+        )
+
+        ax.set_yscale("log")
+        _guide(ax, x=SNR_NOISE_FLOOR)
+        _clean_ax(ax)
+
+        ax.set_xlabel("Mean SNR across screen  (site-radius sphere)")
+        ax.set_ylabel("Mean pairwise KL divergence  (log scale)")
+        ax.set_title("Signal strength vs. distributional consistency")
+
+        _kw = dict(fontsize=5.5, color="#AAAAAA", ha="center", va="center",
+                   style="italic", transform=ax.transAxes, zorder=0)
+        ax.text(0.78, 0.88, "strong signal\nvariable distributions", **_kw)
+        ax.text(0.78, 0.12, "strong signal\nreproducible distributions", **_kw)
+        ax.text(0.22, 0.12, "weak signal\nreproducible", **_kw)
+        ax.text(0.22, 0.88, "noise", **_kw)
+
+        composite = np.where(valid, snr / (kl + 1e-9), -np.inf)
+        _label_top(ax, site_ids, snr, kl, composite)
+
+        fig.savefig(output_path)
+        plt.close(fig)
+
+
+# ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
@@ -578,20 +724,28 @@ def generate_water_analysis_figures(
 
     figures_dir.mkdir(parents=True, exist_ok=True)
 
+    _fig_snr_vs_kl(
+        sites, consistencies,
+        figures_dir / "01_snr_vs_kl_divergence.png",
+    )
+    _fig_snr_vs_kl_plain(
+        sites, consistencies,
+        figures_dir / "01b_snr_vs_kl_divergence_plain.png",
+    )
     _fig_snr_consistency(
         sites, consistencies,
-        figures_dir / "01_snr_vs_consistency.png",
+        figures_dir / "02_snr_vs_consistency.png",
     )
     _fig_snr_by_occupancy(
         sites, consistencies,
-        figures_dir / "02_snr_by_occupancy.png",
+        figures_dir / "03_snr_by_occupancy.png",
     )
     _fig_volcano(
         sites, consistencies,
-        figures_dir / "03_volcano.png",
+        figures_dir / "04_volcano.png",
     )
     _fig_fragment_correlation(
         sites, consistencies,
         per_structure_snr, per_structure_occ,
-        figures_dir / "04_fragment_correlation.png",
+        figures_dir / "05_fragment_correlation.png",
     )

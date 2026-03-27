@@ -80,6 +80,7 @@ _SUMMARY_FIELDS = [
     # Consistency metrics
     "snr_cv", "snr_above_1_fraction", "consistency_score",
     "snr_tstat", "snr_pvalue",
+    "mean_pairwise_kl",
     "most_common_occupancy",
 ]
 
@@ -162,6 +163,7 @@ def export_water_sites_summary(
             "consistency_score": _f(cons.consistency_score),
             "snr_tstat": _f(cons.snr_tstat),
             "snr_pvalue": _f(cons.snr_pvalue),
+            "mean_pairwise_kl": _f(cons.mean_pairwise_kl),
             "most_common_occupancy": cons.most_common_occupancy,
         })
 
