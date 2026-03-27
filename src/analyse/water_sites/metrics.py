@@ -71,6 +71,7 @@ class WaterSiteConsistency:
     snr_tstat: float
     snr_pvalue: float
     mean_pairwise_kl: float
+    mean_pairwise_snr_diff: float
 
 
 def _symmetric_kl(mu1: float, s1: float, mu2: float, s2: float) -> float:
@@ -120,6 +121,35 @@ def _mean_pairwise_kl(per_structure_snr: List[PerStructureSiteSNR]) -> float:
     return total / count
 
 
+def _mean_pairwise_snr_diff(per_structure_snr: List[PerStructureSiteSNR]) -> float:
+    """
+    Mean absolute pairwise difference between per-structure SNR means.
+
+    For each pair of structures (i, j) with valid SNR at this site compute
+    |μᵢ − μⱼ|, then average over all N(N−1)/2 pairs.  The result is in
+    absolute SNR units with no normalisation applied.
+
+    Returns NaN when fewer than _MIN_N_FOR_KL structures have valid SNR data.
+    """
+    means: List[float] = []
+    for rec in per_structure_snr:
+        stats = rec.snr_site_radius
+        if stats is not None and math.isfinite(stats.mean):
+            means.append(stats.mean)
+
+    if len(means) < _MIN_N_FOR_KL:
+        return float("nan")
+
+    total = 0.0
+    count = 0
+    for i in range(len(means)):
+        for j in range(i + 1, len(means)):
+            total += abs(means[i] - means[j])
+            count += 1
+
+    return total / count
+
+
 def _most_common_occupancy(occupancies: List[SiteOccupancy]) -> str:
     counts = Counter(o.occupancy_type.value for o in occupancies)
     if not counts:
@@ -158,6 +188,7 @@ def compute_consistency(
     occ_label = _most_common_occupancy(per_structure_occ)
 
     pairwise_kl = _mean_pairwise_kl(per_structure_snr)
+    pairwise_diff = _mean_pairwise_snr_diff(per_structure_snr)
 
     if not means:
         return WaterSiteConsistency(
@@ -171,6 +202,7 @@ def compute_consistency(
             snr_tstat=nan,
             snr_pvalue=nan,
             mean_pairwise_kl=pairwise_kl,
+            mean_pairwise_snr_diff=pairwise_diff,
         )
 
     arr = np.array(means, dtype=np.float64)
@@ -198,4 +230,5 @@ def compute_consistency(
         snr_tstat=t_stat,
         snr_pvalue=p_val,
         mean_pairwise_kl=pairwise_kl,
+        mean_pairwise_snr_diff=pairwise_diff,
     )
