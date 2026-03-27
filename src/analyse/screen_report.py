@@ -537,7 +537,7 @@ def _build_html(
           <td>{_single_link(r["original_pdb"], "PDB")}</td>
           <td>{_single_link(r["original_mtz"], "MTZ")}</td>
           <td>{_file_links(r["snr_maps"], "STOMP-SNR")}</td>
-          <td>{_file_links(r["mean_maps"], "STOMP-\u03bc")}</td>
+          <td>{_file_links(r["mean_maps"], "STOMP-μ")}</td>
           <td>{_single_link(r["scored_pdb"], "Scored PDB")}</td>
           <td>
             <button class="btn btn-sm btn-outline-secondary" type="button"
