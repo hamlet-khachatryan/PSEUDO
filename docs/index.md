@@ -146,6 +146,32 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density su
 
 ---
 
+## Screen Report
+
+When `pseudo-analyse` processes a **screening run** (a directory containing multiple crystals), it automatically generates an interactive HTML summary report:
+
+```
+<screening_dir>/index.html
+```
+
+<p align="center">
+  <img src="{{ '/assets/images/example_report.png' | relative_url }}"
+       alt="PSEUDO Screen Results — interactive HTML report"
+       style="max-width:100%; border:1px solid #dee2e6; border-radius:6px;">
+</p>
+
+The report collects all crystal results into one table with OPIA and ligand MUSE badges, direct links to maps and structures and pre-built Coot session scripts that load maps for visual inspection.
+
+The report can be regenerated at any time from existing analysis results:
+
+```bash
+pseudo-screen-report --input_path /scratch/results/my_screen
+```
+
+See the [Analyse guide](guides/analyse#screen-report) for a full description of every column and the Coot integration.
+
+---
+
 ## Logging
 
 Each pipeline stage writes structured [eliot](https://eliot.readthedocs.io/) logs in NDJSON format to:

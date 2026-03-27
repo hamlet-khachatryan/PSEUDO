@@ -140,6 +140,28 @@ Load `{stem}_scored.pdb` in PyMOL and colour by B-factor to visualise density su
 
 ---
 
+## Screen Report
+
+When running on a **screening directory** (multiple crystals), `pseudo-analyse` automatically generates an interactive HTML summary report at `<screening_dir>/index.html`.
+
+![PSEUDO Screen Results](docs/assets/images/example_report.png)
+
+The report provides:
+
+- **Summary cards** — total crystals, analysis-complete count, mean OPIA across the run
+- **Sortable table** — one row per crystal with colour-coded OPIA and ligand MUSE badges, SNR significance threshold, links to all output files, and a collapsible binding-site residue table
+- **Coot integration** — one pre-built session script per crystal that loads the scored model, refined 2FoFc map, STOMP_μ map, and STOMP_SNR map, centred on the ligand
+
+The report can be regenerated at any time without re-running analysis:
+
+```bash
+pseudo-screen-report --input_path /scratch/results/my_screen
+```
+
+See the [Analyse guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/analyse#screen-report) for full documentation.
+
+---
+
 ## Further reading
 
 - [Debias guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/debias) — STOMP map generation, directory layout, batch screening

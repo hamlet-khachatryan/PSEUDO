@@ -99,7 +99,11 @@ When multiple experiments are found the following are written to the screening r
 The screen report is an interactive, self-contained HTML file written to `<screening_dir>/index.html`.
 It aggregates every crystal's MUSE results into one sortable table and provides direct links and Coot integration.
 
-![PSEUDO Screen Results example](../assets/images/example_report.png)
+<p align="center">
+  <img src="{{ '/assets/images/example_report.png' | relative_url }}"
+       alt="PSEUDO Screen Results — example report for a ZVN52B fragment screening run"
+       style="max-width:100%; border:1px solid #dee2e6; border-radius:6px;">
+</p>
 
 ### Summary cards
 
