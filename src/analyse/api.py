@@ -21,6 +21,7 @@ from analyse.muse.pipeline import (
     write_scored_pdb,
 )
 from analyse.muse.config import snr_map_config
+from analyse.screen_report import generate_screen_report
 from quantify.statistical_model import compute_significance_threshold
 from quantify.utils import find_experiments, get_experiment_paths
 
@@ -249,9 +250,18 @@ def run_analysis(
     map_cap: Optional[int] = _DEFAULT_MAP_CAP,
     num_processes: int = 1,
     significance_alpha: float = 0.05,
+    lig_resname: str = "LIG",
+    neighbourhood_radius: float = 10.0,
 ) -> None:
     """
-    Run MUSE analysis on a single experiment or a screening directory
+    Run MUSE analysis on a single experiment or a screening directory.
+
+    For screening runs (multiple experiments) an HTML summary report and
+    per-experiment JSON files are written automatically after analysis
+    completes:
+        <input_path>/index.html
+        <input_path>/metadata/<stem>_screen_result.json
+        <input_path>/metadata/screen_summary_<timestamp>.json
     """
 
     input_path = Path(input_path)
@@ -288,3 +298,9 @@ def run_analysis(
         )
         with Pool(max(1, num_processes)) as pool:
             pool.map(worker, experiments)
+
+        generate_screen_report(
+            screening_dir=input_path,
+            lig_resname=lig_resname,
+            neighbourhood_radius=neighbourhood_radius,
+        )

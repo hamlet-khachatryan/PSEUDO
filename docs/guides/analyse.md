@@ -8,12 +8,18 @@ nav_order: 3
 
 The **Analyse** module scores every heavy atom in the model against the debiased SNR map using **MUSE** (Model Uncertainty Score Estimator). MUSE adapts the EDIA methodology to any scalar field.
 
+In **screening mode** (multiple experiments in one directory) the module also generates an interactive HTML summary report — the **Screen Report** — covering all crystals in a single sortable table.
+
 ---
 
 ## Quick start
 
 ```bash
+# Single experiment
 pseudo-analyse --input_path /scratch/results/my_experiment
+
+# Screening run (all crystals in the directory)
+pseudo-analyse --input_path /scratch/results/my_screen --num_processes 8
 ```
 
 ---
@@ -64,6 +70,8 @@ export_residue_csv(result, "residues.csv")
 
 ## Outputs
 
+### Per-experiment files
+
 Written to `<crystal>/analyse_results/`:
 
 | File | Description |
@@ -72,6 +80,107 @@ Written to `<crystal>/analyse_results/`:
 | `{stem}_residues.csv` | Per-residue MUSEm, min/median/max atom score, diagnostic counts |
 | `{stem}_summary.json` | Global statistics: OPIA, atom/residue counts, thresholds |
 | `{stem}_scored.pdb` | Original structure with MUSE scores in the B-factor column (×100) |
+
+### Screening mode files
+
+When multiple experiments are found the following are written to the screening root:
+
+| File | Description |
+|---|---|
+| `index.html` | Interactive HTML screen report (see below) |
+| `metadata/{stem}_screen_result.json` | Full per-experiment result dictionary |
+| `metadata/screen_summary_{timestamp}.json` | Run-level summary: experiment list, mean OPIA, counts |
+| `coot/{stem}_coot_view.py` | Auto-generated Coot session script per crystal |
+
+---
+
+## Screen Report
+
+The screen report is an interactive, self-contained HTML file written to `<screening_dir>/index.html`.
+It aggregates every crystal's MUSE results into one sortable table and provides direct links and Coot integration.
+
+![PSEUDO Screen Results example](../assets/images/example_report.png)
+
+### Summary cards
+
+The top of the page shows run-level summary cards:
+
+| Card | Description |
+|---|---|
+| **Experiments** | Total number of crystals discovered |
+| **Analysis complete** | Crystals for which `analyse_results/` exist |
+| **Mean OPIA** | Average OPIA across all completed crystals |
+| **Screening input** | Inferred original screening project directory |
+| **Screening directory** | Path to the PSEUDO workspace root |
+
+### Table columns
+
+| Column | Description                                                                                  |
+|---|----------------------------------------------------------------------------------------------|
+| **Crystal** | Experiment stem (crystal name)                                                               |
+| **OPIA** | Overall Per-instance Agreement: fraction of atoms with sufficient density support            |
+| **SNR (p≤0.05)** | The STOMP-SNR value at significance level p = 0.05, derived from the fitted null distribution |
+| **Mean MUSE** | Mean per-atom MUSE score across the whole structure                                          |
+| **LIG MUSE** | MUSEm score for the ligand residue (default `LIG`)                                           |
+| **Original PDB** | Link to the input structure file                                                             |
+| **Original MTZ** | Link to the input reflections file                                                           |
+| **STOMP_SNR map(s)** | Link(s) to the STOMP SNR map(s) in `quantify_results/`                                       |
+| **STOMP_μ map(s)** | Link(s) to the STOMP mean map(s) in `quantify_results/`                                      |
+| **Scored PDB** | Link to `{stem}_scored.pdb` with MUSE scores in the B-factor column for PyMol visualization  |
+| **Binding site** | Toggle button revealing a table of all residues within 10 Å of the ligand                    |
+| **Crystal folder** | Clickable link that opens the original crystal input directory in the file manager           |
+| **Coot** | "Copy command" button and selectable `coot --script …` command for Coot session loading |
+
+### Coot integration
+
+Each crystal has a pre-generated Coot session script at `coot/{stem}_coot_view.py`.
+Clicking **Copy command** copies the full `coot --script <path>` command to the clipboard.
+
+Running the script in Coot loads:
+
+| Map | Colour | Level                                 |
+|---|---|---------------------------------------|
+| Original MTZ reflections | Brick red `(0.80, 0.25, 0.10)` | σ = 1.0                               |
+| STOMP_μ (mean map) | Forest green `(0.14, 0.55, 0.13)` | σ = 1.0                               |
+| STOMP_SNR map | Golden `(0.85, 0.65, 0.13)` | Absolute STOMP SNR (p≤0.05) threshold |
+
+```bash
+# Make sure that coot is in your PATH
+coot --version 
+
+# Or load coot. 
+module load coot 
+
+# For Diamond users coot is part of the ccp4 module:
+module load ccp4
+
+# Run from a terminal for visualisation
+coot --script /path/to/coot/XX01ZVNS2B-x0051_coot_view.py
+```
+
+### Regenerating the report
+
+The report can be regenerated at any time without re-running analysis using the standalone command:
+
+```bash
+pseudo-screen-report --input_path /scratch/results/my_screen
+pseudo-screen-report --input_path /scratch/results/my_screen --open_browser
+```
+
+`--open_browser` opens `index.html` in the default browser immediately after generation
+
+### Python API
+
+```python
+from analyse.screen_report import generate_screen_report
+
+generate_screen_report(
+    screening_dir="/scratch/results/my_screen",
+    lig_resname="LIG",          # residue name to score and centre Coot on
+    neighbourhood_radius=10.0,  # Å radius for binding-site table
+    open_browser=False,
+)
+```
 
 ---
 
@@ -102,7 +211,7 @@ fig2.savefig("water_support.pdf")
 
 ## Significance threshold
 
-When null-distribution parameters are present in `metadata/` (produced by `pseudo-quantify`), `pseudo-analyse` automatically sets the OPIA and missing-density thresholds to the SNR value at `p = significance_alpha`. This adapts the scoring to the actual noise floor of the experiment.
+When null-distribution parameters are present in `metadata/` (produced by `pseudo-quantify`), `pseudo-analyse` automatically sets the OPIA and missing-density thresholds to the SNR value at `p = significance_alpha`. This adapts the scoring to the actual noise floor of the experiment. The threshold is reported in the **SNR (p≤0.05)** column of the screen report and embedded in `{stem}_summary.json` as `significance_snr_threshold`.
 
 ---
 
@@ -120,18 +229,6 @@ result = run_muse("map.ccp4", "model.pdb", resolution=1.8, config=config)
 ```
 
 See [Configuration Reference — MUSE](../reference#muse-scoring-parameters-museconfig) for all parameters.
-
----
-
-## Diagnostic flags
-
-Each atom in the output carries three boolean flags:
-
-| Flag | Condition |
-|---|---|
-| `has_clash` | Sphere overlap > 10 % with any non-bonded neighbour |
-| `has_missing_density` | `score_positive` < `missing_density_threshold` |
-| `has_unaccounted_density` | `|score_negative|` > `unaccounted_density_threshold` |
 
 ---
 

@@ -117,6 +117,7 @@ def plot_water_support(
         chain_id: If given, restrict to this chain
         score_field: One of 'musem' (default), 'min', 'median', 'max'
     """
+
     if score_field not in _SCORE_ATTR:
         raise ValueError(f"score_field must be one of {list(_SCORE_ATTR)}, got '{score_field}'.")
     attr = _SCORE_ATTR[score_field]

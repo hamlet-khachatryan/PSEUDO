@@ -1,5 +1,6 @@
 import click
 from analyse.api import run_analysis
+from analyse.screen_report import generate_screen_report
 
 
 @click.command(name="analyse")
@@ -66,7 +67,8 @@ from analyse.api import run_analysis
     help="Significance level for the null-distribution SNR threshold (p value threshold). "
     "The SNR value at p=alpha is used as the MUSE classification threshold. Default p=0.05.",
 )
-def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap, num_processes, significance_alpha):
+def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap,
+                num_processes, significance_alpha):
     """
     Run MUSE density-support analysis on debiased, quantified structure(s).
     For each experiment, scores every heavy atom against the STOMP-SNR map,
@@ -78,6 +80,14 @@ def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap, num_p
         {stem}_summary.json   global statistics (OPIA, counts, etc.)
         {stem}_scored.pdb     structure with MUSE scores in the B-factor column
                               (load in PyMOL and colour by b-factor to visualise)
+
+    In screening mode (multiple experiments), an HTML summary report and
+    per-experiment JSON files are also written:
+
+    \b
+        index.html                                   interactive screen report
+        metadata/<stem>_screen_result.json           per-experiment results
+        metadata/screen_summary_<timestamp>.json     run-level summary
     """
     try:
         run_analysis(
@@ -96,3 +106,41 @@ def analyse_cli(input_path, stem, map_path, model_path, k_factor, map_cap, num_p
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
         raise e
+
+
+@click.command(name="screen-report")
+@click.option(
+    "--input_path",
+    "-p",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    help="Root directory of the PSEUDO screening run (the run_name/ directory).",
+)
+@click.option(
+    "--open_browser",
+    is_flag=True,
+    default=False,
+    help="Open index.html in the default browser after generation.",
+)
+def screen_report_cli(input_path, open_browser):
+    """
+    (Re)generate the screen-run HTML/JSON report for a completed screening analysis.
+
+    Reads analyse_results/ from every experiment sub-directory and writes:
+
+    \b
+        index.html                                    interactive screen report
+        metadata/<stem>_screen_result.json            per-experiment results
+        metadata/screen_summary_<timestamp>.json      run-level summary
+
+    The original screening project directory is inferred automatically from
+    the common ancestor of input structure paths in sbatch/preprocessing_manifest.txt.
+    """
+    try:
+        generate_screen_report(
+            screening_dir=input_path,
+            open_browser=open_browser,
+        )
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
