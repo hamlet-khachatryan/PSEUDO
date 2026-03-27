@@ -442,9 +442,8 @@ def _folder_btn(path: str) -> str:
     if not path:
         return '<span class="text-muted">—</span>'
     return (
-        f'<button class="btn btn-sm btn-outline-secondary" type="button" '
-        f'onclick="copyPath(this, {json.dumps(path)})" title="{path}">'
-        f'Copy path</button>'
+        f'<a href="file://{path}" title="{path}" '
+        f'class="badge bg-secondary text-decoration-none">Open folder</a>'
     )
 
 
@@ -521,10 +520,14 @@ def _build_html(
         coot_script = r.get("coot_script", "")
         coot_cmd = f"coot --script {coot_script}" if coot_script else ""
         coot_btn = (
-            f'<button class="btn btn-sm btn-outline-success" type="button" '
-            f'title="Copy to clipboard: {coot_cmd}" '
-            f'onclick="copyCoot(this, {json.dumps(coot_cmd)})">'
-            f'Open in Coot</button>'
+            f'<div style="min-width:200px;">'
+            f'<button class="btn btn-sm btn-outline-success mb-1" type="button" '
+            f'onclick="copyCoot(this, document.getElementById(\'coot-cmd-{idx}\'))">'
+            f'Copy command</button>'
+            f'<br><code id="coot-cmd-{idx}" '
+            f'style="font-size:0.68rem;word-break:break-all;user-select:all;cursor:text;">'
+            f'{coot_cmd}</code>'
+            f'</div>'
             if coot_script else
             '<span class="text-muted">—</span>'
         )
@@ -532,6 +535,7 @@ def _build_html(
         <tr>
           <td><strong>{r["stem"]}</strong></td>
           <td>{_badge(r["opia"], _OPIA_GREEN, _OPIA_YELLOW)}</td>
+          <td>{_fmt(r["significance_snr_threshold"])}</td>
           <td>{_fmt(r["mean_atom_score"])}</td>
           <td>{_badge(lig["musem_score"], _MUSE_GREEN, _MUSE_YELLOW)}</td>
           <td>{_single_link(r["original_pdb"], "PDB")}</td>
@@ -628,6 +632,7 @@ def _build_html(
         <tr>
           <th>Crystal</th>
           <th title="Overall Per-instance Agreement">OPIA</th>
+          <th title="STOMP-SNR value at p&#8804;0.05 (significance threshold)">SNR (p&#8804;0.05)</th>
           <th>Mean MUSE</th>
           <th title="{lig_resname} MUSEm score">{lig_resname} MUSE</th>
           <th>Original PDB</th>
@@ -658,60 +663,35 @@ function filterTable(q) {{
   }});
 }}
 
-function _copyText(text, onSuccess, onFail) {{
-  if (navigator.clipboard && navigator.clipboard.writeText) {{
-    navigator.clipboard.writeText(text).then(onSuccess, function() {{
-      _fallbackCopy(text, onSuccess, onFail);
-    }});
+function copyCoot(btn, codeEl) {{
+  var text = codeEl ? codeEl.textContent.trim() : "";
+  if (!text) return;
+  var orig = btn.textContent;
+  function flash() {{
+    btn.textContent = "Copied!";
+    btn.classList.replace("btn-outline-success", "btn-success");
+    setTimeout(function() {{
+      btn.textContent = orig;
+      btn.classList.replace("btn-success", "btn-outline-success");
+    }}, 2000);
+  }}
+  /* Try Clipboard API (works in HTTPS / modern browsers) */
+  if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(text).then(flash).catch(function() {{ execCopy(text, flash); }});
   }} else {{
-    _fallbackCopy(text, onSuccess, onFail);
+    execCopy(text, flash);
   }}
 }}
 
-function _fallbackCopy(text, onSuccess, onFail) {{
+function execCopy(text, onSuccess) {{
+  /* execCommand fallback — works on file:// in Firefox */
   var ta = document.createElement("textarea");
   ta.value = text;
-  ta.style.position = "fixed";
-  ta.style.opacity = "0";
+  ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
   document.body.appendChild(ta);
-  ta.focus();
   ta.select();
-  try {{
-    document.execCommand("copy");
-    onSuccess();
-  }} catch(e) {{
-    onFail();
-  }}
+  try {{ if (document.execCommand("copy")) {{ onSuccess(); }} }} catch(e) {{}}
   document.body.removeChild(ta);
-}}
-
-function _flashBtn(btn, successClass, failClass, origText, successText) {{
-  btn.textContent = successText;
-  btn.classList.replace(failClass, successClass);
-  setTimeout(function() {{
-    btn.textContent = origText;
-    btn.classList.replace(successClass, failClass);
-  }}, 2000);
-}}
-
-function copyCoot(btn, cmd) {{
-  if (!cmd) return;
-  var orig = btn.textContent;
-  _copyText(
-    cmd,
-    function() {{ _flashBtn(btn, "btn-success", "btn-outline-success", orig, "Copied!"); }},
-    function() {{ prompt("Copy this command and run in your terminal:", cmd); }}
-  );
-}}
-
-function copyPath(btn, path) {{
-  if (!path) return;
-  var orig = btn.textContent;
-  _copyText(
-    path,
-    function() {{ _flashBtn(btn, "btn-secondary", "btn-outline-secondary", orig, "Copied!"); }},
-    function() {{ prompt("Crystal folder path:", path); }}
-  );
 }}
 
 function toggleNbhd(id, btn) {{
