@@ -82,6 +82,26 @@ Configured entirely via CLI flags (no YAML):
 
 ---
 
+## Screen Report (`pseudo-screen-report`)
+
+Regenerates the HTML screen report from existing `analyse_results/` data without re-running analysis. Configured entirely via CLI flags:
+
+| Flag | Short | Type | Default | Description |
+|---|---|---|---|---|
+| `--input_path` | `-p` | path | *required* | Root directory of the screening run. |
+| `--open_browser` | | flag | `False` | Open `index.html` in the default browser after generation. |
+
+Outputs written to `<input_path>/`:
+
+| File | Description                                                      |
+|---|------------------------------------------------------------------|
+| `index.html` | Interactive HTML report sorted by OPIA descending                |
+| `metadata/{stem}_screen_result.json` | Full per-crystal result dictionary                               |
+| `metadata/screen_summary_{timestamp}.json` | Run-level summary (experiment list, mean OPIA, counts)           |
+| `coot/{stem}_coot_view.py` | Coot session script loading scored model + all colourcoded maps  |
+
+---
+
 ## MUSE scoring parameters (`MUSEConfig`)
 
 These are Python-only parameters, passed to `run_muse()` via a `MUSEConfig` object. They control the internal MUSE scoring algorithm used by `pseudo-analyse`.
