@@ -50,6 +50,7 @@ pseudo-debias = "debias.cli:debias_cli"
 pseudo-quantify = "quantify.cli:quantify_cli"
 pseudo-analyse = "analyse.cli:analyse_cli"
 pseudo-screen-report = "analyse.cli:screen_report_cli"
+pseudo-water-sites = "analyse.cli:water_sites_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]

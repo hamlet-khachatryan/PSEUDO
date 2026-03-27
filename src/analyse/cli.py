@@ -1,6 +1,8 @@
 import click
 from analyse.api import run_analysis
 from analyse.screen_report import generate_screen_report
+from analyse.water_sites.pipeline import run_water_site_analysis
+from analyse.water_sites.config import WaterSiteConfig
 
 
 @click.command(name="analyse")
@@ -140,6 +142,107 @@ def screen_report_cli(input_path, open_browser):
         generate_screen_report(
             screening_dir=input_path,
             open_browser=open_browser,
+        )
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        raise SystemExit(1)
+
+
+@click.command(name="water-sites")
+@click.option(
+    "--input_path",
+    "-p",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    help="Root directory of the PSEUDO screening run.",
+)
+@click.option(
+    "--k_factor",
+    "-k",
+    default=1.0,
+    type=float,
+    show_default=True,
+    help="K factor used during quantification to locate the SNR maps.",
+)
+@click.option(
+    "--map_cap",
+    "-c",
+    default=50,
+    type=int,
+    show_default=True,
+    help="Map cap used during quantification. Pass 0 to auto-detect the "
+    "highest available cap.",
+)
+@click.option(
+    "--eps",
+    default=1.5,
+    type=float,
+    show_default=True,
+    help="DBSCAN clustering radius in Å. Waters within this distance are "
+    "candidates for the same conserved site.",
+)
+@click.option(
+    "--min_site_radius",
+    default=1.52,
+    type=float,
+    show_default=True,
+    help="Minimum SNR sphere radius in Å (floor for single-water sites). "
+    "Defaults to the VdW radius of oxygen.",
+)
+@click.option(
+    "--occupancy_radius",
+    default=1.5,
+    type=float,
+    show_default=True,
+    help="Search radius in Å used to classify what occupies each water site.",
+)
+@click.option(
+    "--num_processes",
+    "-n",
+    default=1,
+    type=int,
+    show_default=True,
+    help="Number of parallel worker processes for per-structure extraction.",
+)
+def water_sites_cli(
+    input_path,
+    k_factor,
+    map_cap,
+    eps,
+    min_site_radius,
+    occupancy_radius,
+    num_processes,
+):
+    """
+    Analyse conserved water sites across a completed PSEUDO screening.
+
+    Clusters modelled waters from all experiments into conserved sites,
+    then extracts SNR signal at each site from every structure (including
+    those where the water was displaced by a ligand or left empty).
+
+    Writes two CSV files to <input_path>/metadata/:
+
+    \b
+        water_sites_summary.csv         one row per water site with
+                                        centroid, radius, water frequency,
+                                        SNR aggregates, and consistency score
+        water_sites_per_structure.csv   one row per (site, structure) with
+                                        per-sphere SNR stats and occupancy
+    """
+    try:
+        config = WaterSiteConfig(
+            clustering_eps=eps,
+            min_site_radius=min_site_radius,
+            occupancy_search_radius=occupancy_radius,
+            k_factor=k_factor,
+            map_cap=map_cap if map_cap > 0 else None,
+        )
+        run_water_site_analysis(
+            screening_dir=input_path,
+            k_factor=k_factor,
+            map_cap=map_cap if map_cap > 0 else None,
+            config=config,
+            num_processes=num_processes,
         )
     except Exception as e:
         click.echo(f"Error: {e}", err=True)

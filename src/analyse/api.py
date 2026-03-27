@@ -22,6 +22,8 @@ from analyse.muse.pipeline import (
 )
 from analyse.muse.config import snr_map_config
 from analyse.screen_report import generate_screen_report
+from analyse.water_sites.pipeline import run_water_site_analysis
+from analyse.water_sites.config import WaterSiteConfig
 from quantify.statistical_model import compute_significance_threshold
 from quantify.utils import find_experiments, get_experiment_paths
 
@@ -252,6 +254,7 @@ def run_analysis(
     significance_alpha: float = 0.05,
     lig_resname: str = "LIG",
     neighbourhood_radius: float = 10.0,
+    run_water_sites: bool = True,
 ) -> None:
     """
     Run MUSE analysis on a single experiment or a screening directory.
@@ -304,3 +307,12 @@ def run_analysis(
             lig_resname=lig_resname,
             neighbourhood_radius=neighbourhood_radius,
         )
+
+        if run_water_sites:
+            run_water_site_analysis(
+                screening_dir=input_path,
+                k_factor=k_factor,
+                map_cap=map_cap,
+                config=WaterSiteConfig(k_factor=k_factor, map_cap=map_cap),
+                num_processes=num_processes,
+            )
