@@ -2,6 +2,7 @@
 title: Analyse
 parent: Guides
 nav_order: 3
+permalink: /guides/analyse
 ---
 
 # Analyse Guide
@@ -100,7 +101,7 @@ The screen report is an interactive, self-contained HTML file written to `<scree
 It aggregates every crystal's MUSE results into one sortable table and provides direct links and Coot integration.
 
 <p align="center">
-  <img src="{{ '/assets/images/example_report.png' | relative_url }}"
+  <img src="../assets/images/example_report.png"
        alt="PSEUDO Screen Results — example report for a ZVN52B fragment screening run"
        style="max-width:100%; border:1px solid #dee2e6; border-radius:6px;">
 </p>

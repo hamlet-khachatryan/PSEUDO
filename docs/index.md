@@ -155,7 +155,7 @@ When `pseudo-analyse` processes a **screening run** (a directory containing mult
 ```
 
 <p align="center">
-  <img src="{{ '/assets/images/example_report.png' | relative_url }}"
+  <img src="assets/images/example_report.png"
        alt="PSEUDO Screen Results — interactive HTML report"
        style="max-width:100%; border:1px solid #dee2e6; border-radius:6px;">
 </p>
