@@ -29,6 +29,7 @@ All parameters for the three PSEUDO stages. CLI flags and YAML keys share the sa
 | `screening_chunk_size` | `int` | `1000` | Maximum number of omission jobs per sbatch array submission. Omission manifests are split into chunks of this size and submitted sequentially to avoid flooding the scheduler. |
 | `mtz_f_labels` | `str` | `null` | Override auto-detected observed-data labels. Comma-separated amplitude+sigma pair, e.g. `"FP,SIGFP"` or `"IMEAN,SIGIMEAN"`. Set when auto-detection fails or picks the wrong array. |
 | `mtz_rfree_label` | `str` | `null` | Override auto-detected R-free flag column, e.g. `"FreeR_flag"`. Set when the MTZ contains multiple flag columns or detection fails. |
+| `simulated_annealing` | `bool` | `true` | Enable simulated annealing during `phenix.composite_omit_map` refinement. Disable for faster, lower-quality runs or when annealing causes instability. |
 
 Either `structure_path` + `reflections_path` **or** `screening_path` must be provided.
 
@@ -42,6 +43,7 @@ Either `structure_path` + `reflections_path` **or** `screening_path` must be pro
 | `mem_per_cpu` | `str` | `"5G"` | Memory per CPU core. |
 | `cpus_per_task` | `int` | `1` | CPU cores per task. |
 | `num_nodes` | `int` | `1` | Number of compute nodes. |
+| `phenix_version` | `str` | `"1.21.2"` | Phenix module version loaded in the SLURM environment (`module load phenix/<version>`). |
 
 ### `paths` — filesystem
 

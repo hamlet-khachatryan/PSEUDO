@@ -16,7 +16,7 @@ SBATCH_HEADER = """#!/bin/bash
 """
 
 ENV_SETUP = """
-module load phenix
+module load phenix/{phenix_version}
 """
 
 EXECUTION_PREPROCESSING = """
@@ -84,7 +84,8 @@ def generate_preprocessing_sbatch_content(
         base_dir=str(dirs["root"]),
     )
 
-    return header + ENV_SETUP + execution
+    env_setup = ENV_SETUP.format(phenix_version=cfg.slurm.phenix_version)
+    return header + env_setup + execution
 
 
 def generate_omission_sbatch_content(
@@ -119,4 +120,5 @@ def generate_omission_sbatch_content(
         omission_manifest=str(manifest_path),
     )
 
-    return header + ENV_SETUP + execution
+    env_setup = ENV_SETUP.format(phenix_version=cfg.slurm.phenix_version)
+    return header + env_setup + execution

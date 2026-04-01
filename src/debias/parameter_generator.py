@@ -230,6 +230,10 @@ def generate_parameter_files(
 
         formatted_sel = _format_selection(selection, cfg.debias.omit_type)
         param_file.set("omit_map.boxing.selection", formatted_sel)
+        param_file.set(
+            "omit_map.boxing.refinement.main.simulated_annealing",
+            cfg.debias.simulated_annealing,
+        )
 
         out_path = dirs["params"] / f"{run_id}.params"
         param_file.save(str(out_path))

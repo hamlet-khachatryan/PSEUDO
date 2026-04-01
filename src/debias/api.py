@@ -74,10 +74,12 @@ def run_debias_generation(
     seed: Optional[int] = None,
     mtz_f_labels: Optional[str] = None,
     mtz_rfree_label: Optional[str] = None,
+    simulated_annealing: Optional[bool] = None,
     slurm_partition: Optional[str] = None,
     slurm_cpus_per_task: Optional[int] = None,
     slurm_mem_per_cpu: Optional[str] = None,
     slurm_num_nodes: Optional[int] = None,
+    slurm_phenix_version: Optional[str] = None,
     force: bool = False,
 ):
     """
@@ -111,6 +113,8 @@ def run_debias_generation(
         overrides.append(f"debias.mtz_f_labels={mtz_f_labels}")
     if mtz_rfree_label is not None:
         overrides.append(f"debias.mtz_rfree_label={mtz_rfree_label}")
+    if simulated_annealing is not None:
+        overrides.append(f"debias.simulated_annealing={simulated_annealing}")
 
     if slurm_partition:
         overrides.append(f"slurm.partition={slurm_partition}")
@@ -121,6 +125,8 @@ def run_debias_generation(
         overrides.append(f"slurm.mem_per_cpu={slurm_mem_per_cpu}")
     if slurm_num_nodes:
         overrides.append(f"slurm.num_nodes={slurm_num_nodes}")
+    if slurm_phenix_version:
+        overrides.append(f"slurm.phenix_version={slurm_phenix_version}")
 
     cfg = load_debias_config(config_path=config_path, overrides=overrides)
     generate_slurm_job(cfg, force=force)
@@ -324,15 +330,41 @@ def _screening_exploration(
 
     if screening_path.endswith(".csv"):
         df = pd.read_csv(screening_path)
-        struct_col = next(
-            (c for c in ["PDB", "CIF", "structure"] if c in df.columns), None
-        )
-        if struct_col is None:
+        # Normalise column names: strip whitespace and lowercase for matching,
+        # then remap to the original names so values are still accessible.
+        col_map = {c.strip().lower(): c for c in df.columns}
+
+        _STRUCT_ALIASES = ["pdb", "cif", "structure", "model", "structure_file"]
+        _MTZ_ALIASES = ["mtz", "sf", "sf_cif", "reflections", "hkl", "cif_sf"]
+
+        struct_col_norm = next((a for a in _STRUCT_ALIASES if a in col_map), None)
+        mtz_col_norm = next((a for a in _MTZ_ALIASES if a in col_map), None)
+
+        if struct_col_norm is None:
             raise ValueError(
-                "CSV must contain a 'PDB', 'CIF', or 'structure' column"
+                f"CSV must contain a structure column. "
+                f"Accepted names (case-insensitive): {_STRUCT_ALIASES}. "
+                f"Found columns: {list(df.columns)}"
             )
-        df["ID"] = df[struct_col].map(lambda x: Path(x).stem)
-        screening_items = list(zip(df["ID"], df[struct_col], df["MTZ"]))
+        if mtz_col_norm is None:
+            raise ValueError(
+                f"CSV must contain a reflections column. "
+                f"Accepted names (case-insensitive): {_MTZ_ALIASES}. "
+                f"Found columns: {list(df.columns)}"
+            )
+
+        struct_col = col_map[struct_col_norm]
+        mtz_col = col_map[mtz_col_norm]
+
+        def _stem(path: str) -> str:
+            s = Path(path).stem
+            for suffix in ("-sf", "_sf", "-SF", "_SF"):
+                if s.endswith(suffix):
+                    s = s[: -len(suffix)]
+            return s
+
+        df["ID"] = df[struct_col].map(_stem)
+        screening_items = list(zip(df["ID"], df[struct_col], df[mtz_col]))
 
     if screening_path.endswith(".sqlite"):
         df = _sqlite_as_dataframe(screening_path)
