@@ -334,22 +334,22 @@ def _screening_exploration(
         # then remap to the original names so values are still accessible.
         col_map = {c.strip().lower(): c for c in df.columns}
 
-        _STRUCT_ALIASES = ["pdb", "cif", "structure", "model", "structure_file"]
-        _MTZ_ALIASES = ["mtz", "sf", "sf_cif", "reflections", "hkl", "cif_sf"]
+        struct_aliases = ["pdb", "cif", "structure", "model", "structure_file"]
+        mtz_aliases = ["mtz", "sf", "sf_cif", "reflections", "hkl", "cif_sf"]
 
-        struct_col_norm = next((a for a in _STRUCT_ALIASES if a in col_map), None)
-        mtz_col_norm = next((a for a in _MTZ_ALIASES if a in col_map), None)
+        struct_col_norm = next((a for a in struct_aliases if a in col_map), None)
+        mtz_col_norm = next((a for a in mtz_aliases if a in col_map), None)
 
         if struct_col_norm is None:
             raise ValueError(
                 f"CSV must contain a structure column. "
-                f"Accepted names (case-insensitive): {_STRUCT_ALIASES}. "
+                f"Accepted names (case-insensitive): {struct_aliases}. "
                 f"Found columns: {list(df.columns)}"
             )
         if mtz_col_norm is None:
             raise ValueError(
                 f"CSV must contain a reflections column. "
-                f"Accepted names (case-insensitive): {_MTZ_ALIASES}. "
+                f"Accepted names (case-insensitive): {mtz_aliases}. "
                 f"Found columns: {list(df.columns)}"
             )
 
