@@ -150,9 +150,12 @@ def _discover_crystals(cfg: DebiasConfig) -> list:
 def _setup_debias_directories(
     cfg: DebiasConfig,
     crystals: list,
-) -> tuple[dict[str, Path], list[Any]]:
+) -> tuple[dict[str, Path], list[Any], list]:
     """
-    Create a directory structure for the run
+    Create a directory structure for the run.
+
+    Returns (dirs, all_omit_params, valid_crystals).  Crystals whose MTZ
+    label detection fails are skipped and excluded from valid_crystals.
     """
 
     base = Path(cfg.paths.work_dir) / cfg.debias.run_name
@@ -166,6 +169,7 @@ def _setup_debias_directories(
         d.mkdir(parents=True, exist_ok=True)
 
     all_omit_params = []
+    valid_crystals = []
     for crystal in crystals:
         crystal_name = crystal[0]
         nested = {
@@ -177,10 +181,21 @@ def _setup_debias_directories(
         for nd in nested.values():
             nd.mkdir(parents=True, exist_ok=True)
 
-        params_c = generate_parameter_files(cfg, nested, crystal)
-        all_omit_params.extend(params_c)
+        try:
+            params_c = generate_parameter_files(cfg, nested, crystal)
+        except ValueError as exc:
+            click.echo(f"Warning: skipping {crystal_name} — {exc}")
+            eliot.log_message(
+                message_type="debias:crystal_skipped",
+                crystal_id=crystal_name,
+                reason=str(exc),
+            )
+            continue
 
-    return dirs, all_omit_params
+        all_omit_params.extend(params_c)
+        valid_crystals.append(crystal)
+
+    return dirs, all_omit_params, valid_crystals
 
 
 def generate_slurm_job(cfg: DebiasConfig, force: bool = False):
@@ -232,14 +247,24 @@ def generate_slurm_job(cfg: DebiasConfig, force: bool = False):
             n_structures=len(crystals),
         )
 
-        dirs, omit_params = _setup_debias_directories(cfg, crystals)
+        dirs, omit_params, valid_crystals = _setup_debias_directories(cfg, crystals)
+
+        n_skipped = len(crystals) - len(valid_crystals)
+        if n_skipped:
+            click.echo(
+                f"Skipped {n_skipped} crystal(s) due to MTZ label detection errors."
+            )
+
+        if not valid_crystals:
+            click.echo("No valid crystals remaining after MTZ label checks. Exiting.")
+            return
 
         chunk_size = cfg.debias.screening_chunk_size
         n_chunks = max(1, (len(omit_params) + chunk_size - 1) // chunk_size)
 
         eliot.log_message(
             message_type="debias:setup_complete",
-            n_crystals=len(crystals),
+            n_crystals=len(valid_crystals),
             n_omit_params=len(omit_params),
             screening_chunk_size=chunk_size,
             n_omission_chunks=n_chunks,
@@ -248,7 +273,7 @@ def generate_slurm_job(cfg: DebiasConfig, force: bool = False):
 
         pre_manifest = dirs["sbatch"] / "preprocessing_manifest.txt"
         with open(pre_manifest, "w") as f:
-            for crystal in crystals:
+            for crystal in valid_crystals:
                 f.write(f"{crystal[0]}|{crystal[1]}|{crystal[2]}\n")
 
         omit_manifest_full = dirs["sbatch"] / "omit_manifest.txt"
