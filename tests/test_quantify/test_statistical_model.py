@@ -50,30 +50,24 @@ def test_compute_significance_threshold_matches_scipy():
     assert abs(result - expected) < 1e-9
 
 def test_fit_t_test_shape_preserved():
-    null_samples = np.random.normal(size=200)
+    params = {"df": 10.0, "loc": 0.0, "scale": 1.0}
     snr_map = np.random.normal(size=(4, 5, 6)).astype(np.float32)
-    p_values = fit_t_test(null_samples, snr_map)
+    p_values = fit_t_test(params, snr_map)
     assert p_values.shape == snr_map.shape
 
 
 def test_fit_t_test_values_in_unit_interval():
-    null_samples = np.random.normal(size=300)
+    params = {"df": 10.0, "loc": 0.0, "scale": 1.0}
     snr_map = np.random.normal(size=(3, 3, 3)).astype(np.float32)
-    p_values = fit_t_test(null_samples, snr_map)
+    p_values = fit_t_test(params, snr_map)
     assert np.all(p_values >= 0.0)
     assert np.all(p_values <= 1.0)
 
 
 def test_fit_t_test_high_snr_gives_low_pvalue():
-    null_samples = np.random.normal(loc=0.0, scale=1.0, size=500)
+    params = {"df": 10.0, "loc": 0.0, "scale": 1.0}
     high_snr = np.array([[[20.0]]], dtype=np.float32)
     low_snr = np.array([[[-20.0]]], dtype=np.float32)
-    p_high = fit_t_test(null_samples, high_snr)[0, 0, 0]
-    p_low = fit_t_test(null_samples, low_snr)[0, 0, 0]
+    p_high = fit_t_test(params, high_snr)[0, 0, 0]
+    p_low = fit_t_test(params, low_snr)[0, 0, 0]
     assert p_high < p_low
-
-
-def test_fit_t_test_empty_null_returns_zeros():
-    snr_map = np.ones((2, 2, 2), dtype=np.float32)
-    result = fit_t_test(np.array([]), snr_map)
-    assert np.all(result == 0.0)

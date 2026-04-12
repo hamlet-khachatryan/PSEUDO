@@ -34,15 +34,20 @@ def solve_voxel(values: np.ndarray, status: np.ndarray):
 
 
 def aggregate_ensemble(
-    ensemble_data: np.ndarray, ref_grid: gemmi.FloatGrid, spatial_index: dict
+    ensemble_data: np.ndarray, ref_grid: gemmi.FloatGrid, spatial_index: dict | None
 ):
     nx, ny, nz = ensemble_data.shape[1:]
     n_maps = ensemble_data.shape[0]
 
+    if spatial_index is None:
+        sig_map = np.mean(ensemble_data, axis=0).astype(np.float32)
+        nos_map = np.std(ensemble_data, axis=0, ddof=1).astype(np.float32)
+        snr_map = np.where(nos_map > 1e-12, sig_map / nos_map, 0.0).astype(np.float32)
+        return sig_map, nos_map, snr_map
+
     sig_map = np.zeros((nx, ny, nz), dtype=np.float32)
     nos_map = np.zeros((nx, ny, nz), dtype=np.float32)
     snr_map = np.zeros((nx, ny, nz), dtype=np.float32)
-    # distributions = np.empty((nx, ny, nz), dtype=object)
 
     for i in range(nx):
         for j in range(ny):
@@ -53,12 +58,10 @@ def aggregate_ensemble(
                 vals = ensemble_data[:, i, j, k]
                 status = query_voxel_ownership(spatial_index, coords, n_maps)
 
-                # s, n, d = solve_voxel(vals, status)
                 s, n = solve_voxel(vals, status)
 
                 sig_map[i, j, k] = s
                 nos_map[i, j, k] = n
                 snr_map[i, j, k] = s / n if n > 1e-12 else 0.0
-                # distributions[i, j, k] = d
 
-    return sig_map, nos_map, snr_map  # , distributions
+    return sig_map, nos_map, snr_map

@@ -99,14 +99,6 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
 
         print(f"--- Quantifying {stem} (K={k_factor}) ---")
 
-        if not paths["omission_json"].exists():
-            print(f"Skipping {stem}: omission map not found.")
-            eliot.log_message(message_type="quantify:skipped", stem=stem, reason="omission_json_missing")
-            return
-
-        omission_map = ownership_logic.load_omission_map(paths["omission_json"])
-        mode = infer_omission_mode(omission_map)
-
         res_ref = paths["results_dir"] / f"{stem}_0" / f"{stem}_0.mtz"
         if not res_ref.exists():
             print(f"Skipping {stem}: no perturbation maps found in results directory.")
@@ -117,23 +109,50 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
         resolution = mtz.resolution_high()
         print(f"Resolution: {resolution:.2f} Å")
 
-        eliot.log_message(
-            message_type="quantify:params",
-            resolution_angstrom=round(resolution, 3),
-            omission_mode=mode,
-            map_cap=current_map_cap,
-        )
-
-        with eliot.start_action(action_type="quantify:build_spatial_index"):
-            spatial_index = ownership_logic.build_spatial_index(
-                paths["processed_pdb"], omission_map, resolution, k_factor, mode
+        if k_factor == 0:
+            spatial_index = None
+            eliot.log_message(
+                message_type="quantify:params",
+                resolution_angstrom=round(resolution, 3),
+                omission_mode="none (k=0, plain average)",
+                map_cap=current_map_cap,
             )
-        if not spatial_index:
-            print("Error: Spatial index failed.")
-            return
+        else:
+            if not paths["omission_json"].exists():
+                print(f"Skipping {stem}: omission map not found.")
+                eliot.log_message(message_type="quantify:skipped", stem=stem, reason="omission_json_missing")
+                return
 
-        with eliot.start_action(action_type="quantify:load_ensemble", map_cap=current_map_cap):
-            data, grid = load_ensemble(paths["results_dir"], stem, current_map_cap)
+            omission_map = ownership_logic.load_omission_map(paths["omission_json"])
+            mode = infer_omission_mode(omission_map)
+
+            eliot.log_message(
+                message_type="quantify:params",
+                resolution_angstrom=round(resolution, 3),
+                omission_mode=mode,
+                map_cap=current_map_cap,
+            )
+
+            with eliot.start_action(action_type="quantify:build_spatial_index"):
+                spatial_index = ownership_logic.build_spatial_index(
+                    paths["processed_pdb"], omission_map, resolution, k_factor, mode
+                )
+            if not spatial_index:
+                print("Error: Spatial index failed.")
+                return
+
+        try:
+            with eliot.start_action(action_type="quantify:load_ensemble", map_cap=current_map_cap):
+                data, grid = load_ensemble(paths["results_dir"], stem, current_map_cap)
+        except ValueError as exc:
+            print(f"Skipping {stem}: {exc}")
+            eliot.log_message(
+                message_type="quantify:skipped",
+                stem=stem,
+                reason="mtz_column_error",
+                detail=str(exc),
+            )
+            return
 
         nx, ny, nz = data.shape[1:]
         with eliot.start_action(
@@ -163,7 +182,7 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
             with open(null_params_path, "w") as fh:
                 json.dump(null_params, fh, indent=2)
 
-            p_value_map = statistical_model.fit_t_test(null_samples, snr)
+            p_value_map = statistical_model.fit_t_test(null_params, snr)
             save_map(np.array(p_value_map), grid, out_dir / f"{stem}_p_value.ccp4")
 
         elapsed_time = time.time() - start_time

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict
 
 import gemmi
 import numpy as np
@@ -51,17 +51,14 @@ def sample_null_distribution(
     return np.array(null_snrs)
 
 
-def fit_t_test(null_snr: List, full_snr_map: np.ndarray) -> np.ndarray:
+def fit_t_test(null_params: Dict[str, float], full_snr_map: np.ndarray) -> np.ndarray:
     """
-    Fits a t-distribution to the null SNR samples and calculates
-    the survival function (1 - CDF), representing the p-value for every
-    voxel in the map
-
-    Both null_snr and full_snr_map must be in the same numerical space
-    (raw SNR, not normalized) for the p-values to be calibrated correctly
+    Calculates the survival function (1 - CDF) of a pre-fitted t-distribution
+    for every voxel in the map, representing the p-value against the null
 
     Args:
-        null_snr: 1D array of null-distribution SNR samples (raw, not normalized).
+        null_params: Fitted t-distribution parameters as returned by
+            fit_null_distribution — keys 'df', 'loc', 'scale'.
         full_snr_map: The full 3D raw SNR map array.
 
     Returns:
@@ -69,12 +66,12 @@ def fit_t_test(null_snr: List, full_snr_map: np.ndarray) -> np.ndarray:
         significant SNR — i.e., density unlikely to arise from background noise.
     """
 
-    if len(null_snr) == 0:
-        return np.zeros_like(full_snr_map)
-
-    df_fit, loc_fit, scale_fit = t.fit(null_snr)
-    p_values = t.sf(full_snr_map, df=df_fit, loc=loc_fit, scale=scale_fit)
-
+    p_values = t.sf(
+        full_snr_map,
+        df=null_params["df"],
+        loc=null_params["loc"],
+        scale=null_params["scale"],
+    )
     return p_values.astype(np.float32)
 
 
@@ -110,8 +107,7 @@ def compute_significance_threshold(
     distribution
 
     Args:
-        null_params: Dict with keys 'df', 'loc', 'scale' as returned by
-            fit_null_distribution.
+        null_params: Dict with keys 'df', 'loc', 'scale' as returned by fit_null_distribution.
         alpha: Significance level. Default 0.05
 
     Returns:

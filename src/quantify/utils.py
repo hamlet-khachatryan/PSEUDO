@@ -23,12 +23,19 @@ def read_mtz(mtz_path: Path | str) -> gemmi.Ccp4Map:
         "PHFDM",
     ]
 
-    label_index = 0
     column_labels = [column.label for column in reflections.columns]
+    label_index = None
     for label_i, label in enumerate(amplitudes):
         if label in column_labels:
             label_index = label_i
             break
+
+    if label_index is None:
+        raise ValueError(
+            f"No recognised amplitude column found in {mtz_path}. "
+            f"Looked for: {amplitudes}. "
+            f"Available columns: {column_labels}"
+        )
 
     ref_map = gemmi.Ccp4Map()
     ref_map.grid = reflections.transform_f_phi_to_map(

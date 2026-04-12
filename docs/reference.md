@@ -57,13 +57,13 @@ Either `structure_path` + `reflections_path` **or** `screening_path` must be pro
 
 Configured entirely via CLI flags (no YAML):
 
-| Flag | Short | Type | Default | Description |
-|---|---|---|---|---|
-| `--input_path` | `-p` | path | *required* | Workspace directory produced by `pseudo-debias`. |
-| `--stem` | `-s` | str | auto | Explicit experiment stem. Inferred automatically if omitted. |
-| `--k_factor` | `-k` | float | `1.0` | Radius multiplier K for atom ownership spheres. |
-| `--map_cap` | `-c` | int | `50` | Limit processing to the first N maps (for convergence testing). |
-| `--force` | `-f` | flag | `False` | Overwrite existing results. |
+| Flag | Short | Type | Default | Description                                                                                                             |
+|---|---|---|---|-------------------------------------------------------------------------------------------------------------------------|
+| `--input_path` | `-p` | path | *required* | Workspace directory produced by `pseudo-debias`.                                                                        |
+| `--stem` | `-s` | str | auto | Explicit experiment stem. Inferred automatically if omitted.                                                            |
+| `--k_factor` | `-k` | float | `1.0` | Radius multiplier K for atom ownership spheres. Pass `0` to skip marginal bias removal and produce an ensemble average. |
+| `--map_cap` | `-c` | int | `50` | Limit processing to the first N maps (for convergence testing).                                                         |
+| `--force` | `-f` | flag | `False` | Overwrite existing results.                                                                                             |
 
 ---
 

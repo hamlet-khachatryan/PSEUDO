@@ -30,7 +30,7 @@ pseudo-quantify --input_path /scratch/results/my_experiment/target_5e5z
 |---|---|---|-------------------------------------------------|
 | `--input_path` | `-p` | *required* | Workspace root produced by `pseudo-debias`.     |
 | `--stem` | `-s` | auto | Explicit experiment stem (inferred if omitted). |
-| `--k_factor` | `-k` | `1.0` | Radius multiplier K for atom ownership spheres. |
+| `--k_factor` | `-k` | `1.0` | Radius multiplier K for atom ownership spheres. Set to `0` to skip bias removal and produce a plain ensemble average. |
 | `--map_cap` | `-c` | `50` | Limit to the first N maps. |
 | `--force` | `-f` | `False` | Overwrite existing `quantify_results/`.         |
 
@@ -102,6 +102,15 @@ Signal = mean(CleanedVector)
 Noise  = std(CleanedVector)
 ```
 
+### Plain average mode (`k=0`)
+
+When `--k_factor 0` is passed, ownership assignment and margianal bias removal are skipped. Each voxel is simply averaged across all maps in the ensemble:
+
+```text
+Signal = mean(D)
+Noise  = std(D)
+SNR    = Signal / Noise
+```
 
 ---
 
