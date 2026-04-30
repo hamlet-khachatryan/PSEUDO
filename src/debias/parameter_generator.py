@@ -254,5 +254,10 @@ def _format_selection(selection_data: List[Tuple], omit_type: str) -> str:
             formatted.append(f"(chain {sel[0]} and resid {sel[1]})")
     elif omit_type == "atoms":
         for sel in selection_data:
-            formatted.append(f"(chain {sel[0]} and resid {sel[1]} and name {sel[3]})")
+            altloc = sel[4] if len(sel) > 4 else "\x00"
+            base = f"(chain {sel[0]} and resid {sel[1]} and name {sel[3]}"
+            if altloc not in ("\x00", " ", ""):
+                formatted.append(f"{base} and altloc {altloc})")
+            else:
+                formatted.append(f"{base})")
     return " or ".join(formatted)
