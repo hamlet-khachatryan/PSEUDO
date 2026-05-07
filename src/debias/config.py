@@ -40,7 +40,7 @@ class DebiasParams:
     screening_chunk_size: int = 1000       # max omission jobs per sbatch array submission
     mtz_f_labels: Optional[str] = None     # comma-separated amplitude+sigma labels, e.g. "FP,SIGFP"
     mtz_rfree_label: Optional[str] = None  # R-free flag column name, e.g. "FreeR_flag"
-    simulated_annealing: bool = True       # enable simulated annealing in phenix.composite_omit_map
+    omission_type: Literal["simple", "refine", "anneal"] = "anneal"
     force: bool = False                    # regenerate params even if results already exist
 
 @dataclass
