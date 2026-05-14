@@ -67,7 +67,7 @@ def save_map(array: np.ndarray, ref_grid: gemmi.FloatGrid, output_path: Path | s
     ccp4_map.write_ccp4_map(str(output_path))
 
 
-def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optional[int]):
+def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optional[int], null_fit_method: str = "truncated"):
     """
     Run quantification for a single experiment defined by a paths dict
     """
@@ -168,13 +168,34 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
 
         print("Running statistical modeling")
 
-        with eliot.start_action(action_type="quantify:statistical_model", n_samples=20000):
+        with eliot.start_action(action_type="quantify:statistical_model", n_samples=20000, null_fit_method=null_fit_method):
             null_samples = statistical_model.sample_null_distribution(
                 snr_map=str(out_dir / f"{stem}_snr.ccp4"),
                 model_path=paths["original_pdb"],
                 n_samples=20000,
             )
-            null_params = statistical_model.fit_null_distribution(null_samples)
+
+            if null_fit_method == "truncated":
+                null_params = statistical_model.fit_null_truncated_mle(null_samples)
+                pi0 = statistical_model.estimate_null_fraction(
+                    null_samples,
+                    df=null_params["df"],
+                    loc=null_params["loc"],
+                    scale=null_params["scale"],
+                )
+                t_alpha = statistical_model.compute_significance_threshold(null_params)
+                eliot.log_message(
+                    message_type="quantify:null_fit_truncated",
+                    n_samples=len(null_samples),
+                    null_df=round(null_params["df"], 4),
+                    null_loc=round(null_params["loc"], 4),
+                    null_scale=round(null_params["scale"], 4),
+                    significance_threshold_alpha05=round(t_alpha, 4),
+                    pi0=round(pi0, 4),
+                )
+            else:
+                null_params = statistical_model.fit_null_distribution(null_samples)
+
             null_params_path = (
                 paths["metadata_dir"]
                 / f"{stem}_null_params_k{k_factor}_cap{current_map_cap}.json"
@@ -203,13 +224,14 @@ def run_quantification(
     k_factor: float = 1.0,
     map_cap: Optional[int] = 50,
     num_processes: int = 1,
+    null_fit_method: str = "truncated",
 ):
     input_path = Path(input_path)
 
     if stem:
         paths = get_experiment_paths(input_path, stem)
         paths["stem"] = stem
-        _quantify_single(paths, force, k_factor, map_cap)
+        _quantify_single(paths, force, k_factor, map_cap, null_fit_method)
         return
 
     experiments = list(find_experiments(str(input_path)))
@@ -217,12 +239,12 @@ def run_quantification(
         raise ValueError(f"No valid experiments found at {input_path}")
 
     if len(experiments) == 1:
-        _quantify_single(experiments[0], force, k_factor, map_cap)
+        _quantify_single(experiments[0], force, k_factor, map_cap, null_fit_method)
     else:
         print(
             f"Screening mode: {len(experiments)} experiments found, "
             f"using {num_processes} process(es)."
         )
-        worker = partial(_quantify_single, force=force, k_factor=k_factor, map_cap=map_cap)
+        worker = partial(_quantify_single, force=force, k_factor=k_factor, map_cap=map_cap, null_fit_method=null_fit_method)
         with Pool(max(1, num_processes)) as pool:
             pool.map(worker, experiments)

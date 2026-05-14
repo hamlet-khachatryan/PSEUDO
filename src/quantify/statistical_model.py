@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict
+import logging
+from typing import Dict, Optional
 
 import gemmi
 import numpy as np
-from scipy.stats import t
+from scipy.optimize import minimize
+from scipy.stats import gaussian_kde, t
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def sample_null_distribution(
@@ -117,3 +121,149 @@ def compute_significance_threshold(
     return float(
         t.ppf(1.0 - alpha, df=null_params["df"], loc=null_params["loc"], scale=null_params["scale"])
     )
+
+
+def fit_null_truncated_mle(
+    samples: np.ndarray,
+    truncation_point: Optional[float] = None,
+) -> Dict[str, float]:
+    """
+    Fit a t-distribution to null SNR samples using truncated MLE on the left half.
+
+    Because signal contamination is one-sided positive, observations at or below
+    the empirical mode are essentially signal-free. Fitting only those samples with
+    the truncation likelihood correction gives unbiased null parameters even when
+    the right tail of the background sample is polluted by ordered waters or
+    unmodelled density.
+
+    Falls back to fit_null_distribution() with a WARNING if the optimizer fails or
+    too few samples lie below the truncation point.
+
+    Args:
+        samples: 1D array of null-distribution SNR samples.
+        truncation_point: SNR value used as the upper truncation bound. If None,
+            estimated as the empirical mode via KDE.
+
+    Returns:
+        Dict with keys 'df', 'loc', 'scale'.
+    """
+    if len(samples) == 0:
+        return {"df": 1.0, "loc": 0.0, "scale": 1.0}
+
+    n_full = len(samples)
+
+    if truncation_point is None:
+        p1, p99 = np.percentile(samples, [1, 99])
+        grid = np.linspace(p1, p99, 1000)
+        kde = gaussian_kde(samples)
+        density = kde(grid)
+        mode_idx = int(np.argmax(density))
+        truncation_point = float(grid[mode_idx])
+
+        top_mask = density >= 0.99 * density[mode_idx]
+        top_span = float(grid[top_mask].max() - grid[top_mask].min())
+        total_span = float(p99 - p1)
+        if total_span > 0 and top_span / total_span > 0.20:
+            logger.warning(
+                "KDE mode estimation: top-1%% density spans %.1f%% of the grid range "
+                "(possible multi-modal or plateau-shaped null). "
+                "Single-t assumption may not hold.",
+                100.0 * top_span / total_span,
+            )
+
+    b = float(truncation_point)
+    left = samples[samples <= b]
+    n_left = len(left)
+
+    if n_left < 1000:
+        logger.warning(
+            "Only %d samples at or below truncation point %.3f (minimum 1000 required). "
+            "Falling back to full-sample t.fit.",
+            n_left, b,
+        )
+        return fit_null_distribution(samples)
+
+    loc_init = float(np.median(left))
+    mad = float(np.median(np.abs(left - loc_init)))
+    scale_init = max(1.4826 * mad, 1e-6)
+
+    def neg_loglik(params: np.ndarray) -> float:
+        log_df, loc, log_scale = params
+        df_ = np.exp(log_df)
+        scale_ = np.exp(log_scale)
+        ll = float(np.sum(t.logpdf(left, df=df_, loc=loc, scale=scale_)))
+        ll -= n_left * float(t.logcdf(b, df=df_, loc=loc, scale=scale_))
+        return -ll
+
+    x0 = [np.log(10.0), loc_init, np.log(scale_init)]
+    result = minimize(
+        neg_loglik,
+        x0,
+        method="Nelder-Mead",
+        options={"maxiter": 5000, "xatol": 1e-6, "fatol": 1e-6},
+    )
+
+    if not result.success:
+        logger.warning(
+            "Truncated MLE did not converge (%s). Falling back to full-sample t.fit.",
+            result.message,
+        )
+        return fit_null_distribution(samples)
+
+    df_fit = float(np.exp(result.x[0]))
+    loc_fit = float(result.x[1])
+    scale_fit = float(np.exp(result.x[2]))
+
+    logger.info(
+        "Truncated MLE fit: n_full=%d, n_left=%d, truncation_point=%.4f, "
+        "df=%.4f, loc=%.4f, scale=%.4f",
+        n_full, n_left, b, df_fit, loc_fit, scale_fit,
+    )
+
+    return {"df": df_fit, "loc": loc_fit, "scale": scale_fit}
+
+
+def estimate_null_fraction(
+    samples: np.ndarray,
+    df: float,
+    loc: float,
+    scale: float,
+) -> float:
+    """
+    Compute Efron's pi_0 upper bound: min over a window around the mode of
+    f_hat(z) / f0(z), where f_hat is a KDE of the full sample and f0 is the
+    fitted null t-distribution.
+
+    pi_0 ~ 1.0 means the background is clean; lower values indicate signal
+    contamination in the null sample.
+
+    Args:
+        samples: Full 1D array of null SNR samples.
+        df, loc, scale: Fitted t-distribution parameters.
+
+    Returns:
+        Estimated null fraction in (0, 1], capped at 1.0.
+    """
+    if len(samples) == 0:
+        return 1.0
+
+    p1, p99 = np.percentile(samples, [1, 99])
+    grid = np.linspace(p1, p99, 1000)
+    kde = gaussian_kde(samples)
+    kde_density = kde(grid)
+
+    mode = float(grid[np.argmax(kde_density)])
+
+    q25, q75 = np.percentile(samples, [25, 75])
+    half_iqr = 0.5 * float(q75 - q25)
+    mask = (grid >= mode - half_iqr) & (grid <= mode + half_iqr)
+    if not mask.any():
+        return 1.0
+
+    model_density = t.pdf(grid[mask], df=df, loc=loc, scale=scale)
+    valid = model_density > 1e-10
+    if not valid.any():
+        return 1.0
+
+    ratios = kde_density[mask][valid] / model_density[valid]
+    return float(min(float(np.min(ratios)), 1.0))

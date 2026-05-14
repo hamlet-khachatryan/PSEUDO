@@ -46,13 +46,25 @@ from quantify.api import run_quantification
     show_default=True,
     help="Number of parallel processes for screening mode (multiple experiments).",
 )
-def quantify_cli(input_path, stem, force, k_factor, map_cap, num_processes):
+@click.option(
+    "--null_fit_method",
+    "-m",
+    default="truncated",
+    type=click.Choice(["full", "truncated"], case_sensitive=True),
+    show_default=True,
+    help=(
+        "Null-distribution fitting method. 'truncated' uses truncated MLE on the left half of the SNR distribution "
+        "to avoid signal contamination from ordered waters.'full' uses unrestricted t.fit on "
+        "all background samples."
+    ),
+)
+def quantify_cli(input_path, stem, force, k_factor, map_cap, num_processes, null_fit_method):
     """
     Quantify Omission Ensembles
     """
 
     try:
-        run_quantification(input_path, stem, force, k_factor, map_cap, num_processes)
+        run_quantification(input_path, stem, force, k_factor, map_cap, num_processes, null_fit_method)
     except Exception as e:
         click.echo(f"Error: {e}")
         raise e

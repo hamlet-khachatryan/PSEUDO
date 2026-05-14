@@ -32,6 +32,7 @@ pseudo-quantify --input_path /scratch/results/my_experiment/target_5e5z
 | `--stem` | `-s` | auto | Explicit experiment stem (inferred if omitted). |
 | `--k_factor` | `-k` | `1.0` | Radius multiplier K for atom ownership spheres. Set to `0` to skip bias removal and produce a plain ensemble average. |
 | `--map_cap` | `-c` | `50` | Limit to the first N maps. |
+| `--null_fit_method` | `-m` | `truncated` | Null-distribution fitting method. `truncated` uses truncated MLE on the left half of the SNR distribution; `full` uses unrestricted `t.fit`. |
 | `--force` | `-f` | `False` | Overwrite existing `quantify_results/`.         |
 
 ---
@@ -46,6 +47,7 @@ run_quantification(
     k_factor=1.0,
     map_cap=50,
     force=False,
+    null_fit_method="truncated",
 )
 ```
 
@@ -111,6 +113,33 @@ Signal = mean(D)
 Noise  = std(D)
 SNR    = Signal / Noise
 ```
+
+---
+
+## Null fitting
+
+`pseudo-quantify` fits a Student-t distribution to ~20,000 SNR values sampled from within the protein mask. The fitted null is saved to `metadata/` and consumed by `pseudo-analyse` to derive a data-driven significance threshold.
+
+### `truncated` (default)
+
+Signal contamination in the null sample is one-sided: ordered waters and unmodelled density inflate only the right tail of the background SNR distribution. The truncated MLE method exploits this by fitting only the left half of the distribution (samples at or below the empirical mode) with a likelihood correction for the truncation:
+
+```
+ℓ(ν, μ, σ) = Σ_{z ≤ b} log f(z; ν, μ, σ)  −  n_L · log F(b; ν, μ, σ)
+```
+
+where `b` is the KDE mode and `F` is the t-distribution CDF. 
+
+Two QC values are logged alongside the fitted parameters:
+
+- **T_{α=0.05}** — the fitted significance threshold at the default alpha level.
+- **π̂₀** — Efron's null fraction estimate (minimum of KDE/model-density ratio near the mode). Values close to 1.0 indicate a clean background; lower values flag signal contamination in the null sample.
+
+If the optimizer fails or fewer than 1000 samples fall below the truncation point, the method falls back to `full` with a warning.
+
+### `full` 
+
+Unrestricted `scipy.stats.t.fit` on all background samples. Sufficient for low-resolution structures with few ordered waters, but becomes progressively biased as water content increases, shifted location, and an elevated threshold. Retained for backward comparison.
 
 ---
 
