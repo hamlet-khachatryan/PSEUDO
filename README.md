@@ -127,6 +127,42 @@ Quantification results are stored in `<work_dir>/<run_name>/<crystal>/quantify_r
 | `{stem}_snr.ccp4`      | STOMP$_{SNR}$ map:  voxel-wise signal-to-noise ratio map               |
 | `{stem}_p_values.ccp4` | voxel-wise signal probability map derived from the STOMP$_{SNR}$ map    |
 
+### Absolute-scale END maps (optional)
+
+The σ-scaled maps above are for within-dataset thresholding. To additionally
+obtain maps on the absolute **electron-number-density** scale (e⁻/Å³), pass
+`--end` to `pseudo-quantify`, or recompute them later on a completed run with
+the standalone `pseudo-end` command:
+
+```bash
+pseudo-quantify --input_path /scratch/my_project/my_experiment --end
+pseudo-end      --input_path /scratch/my_project/my_experiment/my_crystal --stem my_crystal
+```
+
+This writes `{stem}_end_mean.ccp4`, `{stem}_end_std.ccp4` and
+`{stem}_end_snr.ccp4` alongside the σ-scaled outputs. Whether the F₀₀₀ used
+includes a bulk-solvent term is governed by the debias-time
+`use_bulk_and_scaling` flag (default off), recorded per run in
+`metadata/{stem}_run_config.json`. See the
+[Quantify guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/quantify#end-maps-absolute-e-å-scale).
+
+### Delta density maps (optional)
+
+To obtain a difference map between the STOMP μ map and the density predicted by
+the perturbation model (`δ = μ − ρ_model` — positive where the model misses
+density, negative where atoms lack support), pass `--delta` to `pseudo-quantify`,
+or recompute it later with the standalone `pseudo-delta` command:
+
+```bash
+pseudo-quantify --input_path /scratch/my_project/my_experiment --delta --end
+pseudo-delta    --input_path /scratch/my_project/my_experiment/my_crystal --stem my_crystal
+```
+
+This writes a σ-scaled `{stem}_delta_sigma.ccp4` (always) and, when END maps are
+present, an absolute-scale `{stem}_delta_end.ccp4`, plus the model density
+`{stem}_model_density.ccp4`. See the
+[Quantify guide](https://hamlet-khachatryan.github.io/PSEUDO/guides/quantify#delta-density-maps-model).
+
 Analysis results land in `<work_dir>/<run_name>/<crystal>/analyse_results/`:
 
 | File | Description |

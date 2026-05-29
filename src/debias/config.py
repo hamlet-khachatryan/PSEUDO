@@ -41,6 +41,8 @@ class DebiasParams:
     mtz_f_labels: Optional[str] = None     # comma-separated amplitude+sigma labels, e.g. "FP,SIGFP"
     mtz_rfree_label: Optional[str] = None  # R-free flag column name, e.g. "FreeR_flag"
     omission_type: Literal["simple", "refine", "anneal"] = "anneal"
+    use_bulk_and_scaling: bool = False     # enable Phenix bulk-solvent modelling + scaling
+    bulk_solvent_k_sol: float = 0.35       # flat bulk-solvent density (e-/A^3); used by END when bulk on
     force: bool = False                    # regenerate params even if results already exist
 
 @dataclass

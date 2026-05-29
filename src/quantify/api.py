@@ -14,6 +14,8 @@ import time
 from common.logging import setup_eliot_logging
 from quantify import ownership_logic
 from quantify import aggregator
+from quantify import end as end_module
+from quantify import delta as delta_module
 
 from quantify import statistical_model
 from quantify.utils import (
@@ -67,7 +69,14 @@ def save_map(array: np.ndarray, ref_grid: gemmi.FloatGrid, output_path: Path | s
     ccp4_map.write_ccp4_map(str(output_path))
 
 
-def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optional[int]):
+def _quantify_single(
+    paths: dict,
+    force: bool,
+    k_factor: float,
+    map_cap: Optional[int],
+    end: bool = False,
+    delta: bool = False,
+):
     """
     Run quantification for a single experiment defined by a paths dict
     """
@@ -81,6 +90,8 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
         stem=stem,
         k_factor=k_factor,
         map_cap=map_cap,
+        end=end,
+        delta=delta,
     ):
         start_time = time.time()
 
@@ -185,6 +196,32 @@ def _quantify_single(paths: dict, force: bool, k_factor: float, map_cap: Optiona
             p_value_map = statistical_model.fit_t_test(null_params, snr)
             save_map(np.array(p_value_map), grid, out_dir / f"{stem}_p_value.ccp4")
 
+        if end:
+            with eliot.start_action(action_type="quantify:end_maps"):
+                end_module.compute_and_write_end(
+                    stem=stem,
+                    processed_pdb=paths["processed_pdb"],
+                    metadata_dir=paths["metadata_dir"],
+                    omission_json=paths["omission_json"],
+                    ensemble_data=data,
+                    ref_grid=grid,
+                    out_dir=out_dir,
+                    force=force,
+                )
+
+        if delta:
+            with eliot.start_action(action_type="quantify:delta_maps"):
+                delta_module.compute_and_write_delta(
+                    stem=stem,
+                    processed_pdb=paths["processed_pdb"],
+                    ref_grid=grid,
+                    out_dir=out_dir,
+                    resolution=resolution,
+                    mu_sigma=sig,
+                    do_end=end,
+                    force=force,
+                )
+
         elapsed_time = time.time() - start_time
         eliot.log_message(
             message_type="quantify:complete",
@@ -203,13 +240,15 @@ def run_quantification(
     k_factor: float = 1.0,
     map_cap: Optional[int] = 50,
     num_processes: int = 1,
+    end: bool = False,
+    delta: bool = False,
 ):
     input_path = Path(input_path)
 
     if stem:
         paths = get_experiment_paths(input_path, stem)
         paths["stem"] = stem
-        _quantify_single(paths, force, k_factor, map_cap)
+        _quantify_single(paths, force, k_factor, map_cap, end, delta)
         return
 
     experiments = list(find_experiments(str(input_path)))
@@ -217,12 +256,19 @@ def run_quantification(
         raise ValueError(f"No valid experiments found at {input_path}")
 
     if len(experiments) == 1:
-        _quantify_single(experiments[0], force, k_factor, map_cap)
+        _quantify_single(experiments[0], force, k_factor, map_cap, end, delta)
     else:
         print(
             f"Screening mode: {len(experiments)} experiments found, "
             f"using {num_processes} process(es)."
         )
-        worker = partial(_quantify_single, force=force, k_factor=k_factor, map_cap=map_cap)
+        worker = partial(
+            _quantify_single,
+            force=force,
+            k_factor=k_factor,
+            map_cap=map_cap,
+            end=end,
+            delta=delta,
+        )
         with Pool(max(1, num_processes)) as pool:
             pool.map(worker, experiments)

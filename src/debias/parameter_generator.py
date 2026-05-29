@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import List, Optional, Tuple
 import itertools
@@ -17,6 +18,66 @@ from debias.omission_table import (
 )
 
 PARAM_TEMPLATES = Path(__file__).parent / "phenix_templates"
+
+# Schema version for the persisted per-run configuration JSON. Bump when the
+# schema changes in a backwards-incompatible way.
+RUN_CONFIG_SCHEMA_VERSION = 1
+
+# Phenix omit-map parameter keys that enable bulk-solvent modelling and
+# scaling. These are flipped to True ONLY when use_bulk_and_scaling is set;
+# otherwise the template defaults (all False, exclude_bulk_solvent True) pass
+# through untouched so that the emitted params are byte-identical to before.
+_BULK_AND_SCALING_TOGGLES: List[Tuple[str, bool]] = [
+    ("omit_map.boxing.exclude_bulk_solvent", False),
+    ("omit_map.boxing.refinement.main.bulk_solvent_and_scale", True),
+    ("omit_map.boxing.refinement.bulk_solvent_and_scale.bulk_solvent", True),
+    ("omit_map.boxing.refinement.bulk_solvent_and_scale.anisotropic_scaling", True),
+    (
+        "omit_map.boxing.refinement.bulk_solvent_and_scale.minimization_k_sol_b_sol",
+        True,
+    ),
+]
+
+
+def _apply_bulk_and_scaling(param_file: ParameterFile) -> None:
+    """
+    Enable Phenix bulk-solvent modelling and scaling on an omit-map param file
+
+    Mutates *param_file* in place, flipping only the keys in
+    ``_BULK_AND_SCALING_TOGGLES``. This is a no-op caller's responsibility:
+    it must only be invoked when ``use_bulk_and_scaling`` is True.
+    """
+    for dotted_path, value in _BULK_AND_SCALING_TOGGLES:
+        param_file.set(dotted_path, value)
+
+
+def save_run_config(out_path: Path | str, cfg: DebiasConfig) -> None:
+    """
+    Persist the configuration of a debias run to a JSON file
+
+    The persisted record lets downstream consumers (e.g. END map computation)
+    discover how the STOMP realisations were produced — in particular whether
+    bulk-solvent modelling and scaling were enabled during refinement. The
+    schema is intentionally extensible; ``schema_version`` guards future
+    changes.
+
+    Args:
+        out_path: Destination JSON path (typically under ``metadata/``).
+        cfg: The validated debias configuration for the run.
+    """
+    record = {
+        "schema_version": RUN_CONFIG_SCHEMA_VERSION,
+        "use_bulk_and_scaling": bool(cfg.debias.use_bulk_and_scaling),
+        "bulk_solvent_k_sol": float(cfg.debias.bulk_solvent_k_sol),
+        "omission_type": cfg.debias.omission_type,
+        "omit_type": cfg.debias.omit_type,
+        "iterations": cfg.debias.iterations,
+        "seed": cfg.debias.seed,
+    }
+    outp = Path(out_path)
+    outp.parent.mkdir(parents=True, exist_ok=True)
+    with outp.open("w", encoding="utf-8") as f:
+        json.dump(record, f, indent=2)
 
 # Phenix-refined amplitudes first, then CCP4 amplitudes,
 _F_CANDIDATES: List[Tuple[str, str]] = [
@@ -210,6 +271,8 @@ def generate_parameter_files(
     sparse_map = omission_sparse_map(id_strings, mat)
     save_omission_json(dirs["metadata"] / f"{stem}_omission_map.json", sparse_map)
 
+    save_run_config(dirs["metadata"] / f"{stem}_run_config.json", cfg)
+
     for i, selection in enumerate(selections):
         run_id = f"{stem}_{i}"
 
@@ -231,6 +294,9 @@ def generate_parameter_files(
         formatted_sel = _format_selection(selection, cfg.debias.omit_type)
         param_file.set("omit_map.boxing.selection", formatted_sel)
         param_file.set("omit_map.omit_type", cfg.debias.omission_type)
+
+        if cfg.debias.use_bulk_and_scaling:
+            _apply_bulk_and_scaling(param_file)
 
         out_path = dirs["params"] / f"{run_id}.params"
         param_file.save(str(out_path))

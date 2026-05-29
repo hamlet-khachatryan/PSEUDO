@@ -200,6 +200,32 @@ debias:
 
 ---
 
+## Bulk solvent and scaling
+
+By default (`use_bulk_and_scaling: false`), omit-map refinement runs **without**
+a bulk-solvent model or scaling — the established STOMP behaviour, reproduced
+byte-for-byte. Set the flag to enable Phenix bulk-solvent modelling and
+anisotropic scaling during refinement:
+
+```yaml
+debias:
+  use_bulk_and_scaling: true
+  bulk_solvent_k_sol: 0.35   # flat bulk-solvent density (e-/Å³), used by END
+```
+
+```bash
+pseudo-debias generate-params --config run.yaml --use_bulk_and_scaling
+```
+
+When enabled, the generated `phenix.composite_omit_map` parameter files turn on
+the bulk-solvent + scaling keys; when disabled, those keys are left at their
+template defaults (off). Either way, the choice is recorded in
+`metadata/{stem}_run_config.json` so that END map computation uses a
+**consistent** F₀₀₀ convention (atomic-only vs atomic + bulk-solvent term). See
+the [Quantify guide → END maps](quantify#end-maps-absolute-e-å-scale).
+
+---
+
 ## Output directory layout
 
 ```
@@ -223,7 +249,8 @@ debias:
     │   ├── {stem}_original.pdb
     │   └── {stem}_updated.pdb
     ├── metadata/
-    │   └── {stem}_omission_map.json
+    │   ├── {stem}_omission_map.json
+    │   └── {stem}_run_config.json     # how the run was produced (bulk solvent, etc.)
     ├── params/
     │   ├── {stem}_0.params
     │   └── ...

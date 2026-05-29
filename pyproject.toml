@@ -48,6 +48,8 @@ cli = [
 [project.scripts]
 pseudo-debias = "debias.cli:debias_cli"
 pseudo-quantify = "quantify.cli:quantify_cli"
+pseudo-end = "quantify.cli:end_cli"
+pseudo-delta = "quantify.cli:delta_cli"
 pseudo-analyse = "analyse.cli:analyse_cli"
 pseudo-screen-report = "analyse.cli:screen_report_cli"
 

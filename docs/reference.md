@@ -30,8 +30,16 @@ All parameters for the three PSEUDO stages. CLI flags and YAML keys share the sa
 | `mtz_f_labels` | `str` | `null` | Override auto-detected observed-data labels. Comma-separated amplitude+sigma pair, e.g. `"FP,SIGFP"` or `"IMEAN,SIGIMEAN"`. Set when auto-detection fails or picks the wrong array. |
 | `mtz_rfree_label` | `str` | `null` | Override auto-detected R-free flag column, e.g. `"FreeR_flag"`. Set when the MTZ contains multiple flag columns or detection fails. |
 | `omission_type` | `str` | `"anneal"` | Omission method passed to `phenix.composite_omit_map` as `omit_map.omit_type`. Options: `simple` (no refinement), `refine` (restrained refinement only), `anneal` (simulated-annealing refinement). |
+| `use_bulk_and_scaling` | `bool` | `false` | Enable Phenix bulk-solvent modelling and scaling during omit-map refinement. When `false` (default) the established STOMP behaviour is reproduced byte-for-byte. When `true`, the omit-map params enable bulk solvent + anisotropic scaling, and END maps include the bulk-solvent term in F₀₀₀. The value is recorded in `metadata/{stem}_run_config.json`. |
+| `bulk_solvent_k_sol` | `float` | `0.35` | Flat bulk-solvent density (e⁻/Å³) used by END when `use_bulk_and_scaling` is `true`. Ignored otherwise. |
 
 Either `structure_path` + `reflections_path` **or** `screening_path` must be provided.
+
+Every run also writes `metadata/{stem}_run_config.json` recording how the
+realisations were produced (schema-versioned; includes `use_bulk_and_scaling`).
+END computation reads this file; if it is absent (legacy runs predating
+run-config support, all produced without bulk solvent) END defaults to no bulk
+solvent. A file that is present but malformed is still an error.
 
 ### `slurm` — cluster resources
 
@@ -64,6 +72,49 @@ Configured entirely via CLI flags (no YAML):
 | `--k_factor` | `-k` | float | `1.0` | Radius multiplier K for atom ownership spheres. Pass `0` to skip marginal bias removal and produce an ensemble average. |
 | `--map_cap` | `-c` | int | `50` | Limit processing to the first N maps (for convergence testing).                                                         |
 | `--force` | `-f` | flag | `False` | Overwrite existing results.                                                                                             |
+| `--end` | | flag | `False` | Additionally compute END (Electron Number Density) maps on the absolute e⁻/Å³ scale, alongside the σ-scaled outputs.    |
+| `--delta` | | flag | `False` | Additionally compute delta density maps (μ − model density) for the perturbation model. σ-scaled δ always; END-scaled δ when `--end` is also set. |
+
+---
+
+## END (`pseudo-end`)
+
+Standalone recompute of END maps for an already-completed STOMP run, without
+re-running STOMP. Reads `metadata/{stem}_run_config.json` to determine the
+bulk-solvent convention; defaults to no bulk solvent if it is absent (legacy
+runs), and errors only if a present file is malformed.
+
+| Flag | Short | Type | Default | Description |
+|---|---|---|---|---|
+| `--input_path` | `-p` | path | *required* | A completed experiment directory (containing `processed/`, `results/`, `metadata/`). |
+| `--stem` | `-s` | str | auto | Explicit experiment stem. |
+| `--k_factor` | `-k` | float | `1.0` | Selects the `quantify_results/k_{k}_cap_{cap}/` directory the END maps are written into. |
+| `--map_cap` | `-c` | int | `50` | Number of realisations to use (maps `0..N-1`). |
+| `--force` | `-f` | flag | `False` | Overwrite existing END outputs. |
+
+Outputs (in `quantify_results/k_{k}_cap_{cap}/`): `{stem}_end_mean.ccp4`,
+`{stem}_end_std.ccp4`, `{stem}_end_snr.ccp4`, and per-realisation
+`{stem}_end_rho_{k}.ccp4`.
+
+---
+
+## Delta (`pseudo-delta`)
+
+Standalone recompute of delta density maps (`δ = μ − ρ_model`) for an
+already-completed run, without re-running STOMP. Reads the on-disk μ map(s) from
+`quantify_results/k_{k}_cap_{cap}/` and the perturbation model `{stem}_updated`.
+
+| Flag | Short | Type | Default | Description |
+|---|---|---|---|---|
+| `--input_path` | `-p` | path | *required* | A completed experiment directory (containing `processed/`, `results/`, `quantify_results/`). |
+| `--stem` | `-s` | str | auto | Explicit experiment stem. |
+| `--k_factor` | `-k` | float | `1.0` | Selects the `quantify_results/k_{k}_cap_{cap}/` directory holding the μ map(s). |
+| `--map_cap` | `-c` | int | `50` | Number of realisations the target directory was built from (maps `0..N-1`). |
+| `--force` | `-f` | flag | `False` | Overwrite existing delta outputs. |
+
+Outputs (in `quantify_results/k_{k}_cap_{cap}/`): `{stem}_delta_sigma.ccp4`,
+`{stem}_model_density.ccp4`, `{stem}_delta_summary.json`, and — where
+`{stem}_end_mean.ccp4` already exists — `{stem}_delta_end.ccp4`.
 
 ---
 

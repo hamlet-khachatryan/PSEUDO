@@ -29,4 +29,6 @@ debias:
   mtz_f_labels: null
   mtz_rfree_label: null
   omission_type: "anneal"
+  use_bulk_and_scaling: false
+  bulk_solvent_k_sol: 0.35
   force: false

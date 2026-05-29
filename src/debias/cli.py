@@ -91,6 +91,23 @@ def debias_cli():
         "Set when auto-detection fails or the MTZ contains multiple flag columns."
     ),
 )
+@click.option(
+    "--use_bulk_and_scaling/--no_use_bulk_and_scaling",
+    default=None,
+    help=(
+        "Enable Phenix bulk-solvent modelling and scaling during omit-map "
+        "refinement. Default (off) reproduces the established STOMP behaviour."
+    ),
+)
+@click.option(
+    "--bulk_solvent_k_sol",
+    type=float,
+    default=None,
+    help=(
+        "Flat bulk-solvent density (e-/A^3) used by END when bulk solvent is "
+        "enabled. Default 0.35."
+    ),
+)
 # SLURM Resources
 @click.option("--partition", type=str, help="SLURM partition to use.")
 @click.option("--cpus_per_task", type=int, help="SLURM CPUs per task.")
@@ -123,6 +140,8 @@ def generate_params(
     screening_chunk_size,
     mtz_f_labels,
     mtz_rfree_label,
+    use_bulk_and_scaling,
+    bulk_solvent_k_sol,
     partition,
     cpus_per_task,
     mem_per_cpu,
@@ -168,6 +187,10 @@ def generate_params(
         overrides.append(f"debias.mtz_f_labels={mtz_f_labels}")
     if mtz_rfree_label is not None:
         overrides.append(f"debias.mtz_rfree_label={mtz_rfree_label}")
+    if use_bulk_and_scaling is not None:
+        overrides.append(f"debias.use_bulk_and_scaling={use_bulk_and_scaling}")
+    if bulk_solvent_k_sol is not None:
+        overrides.append(f"debias.bulk_solvent_k_sol={bulk_solvent_k_sol}")
 
     if partition:
         overrides.append(f"slurm.partition={partition}")

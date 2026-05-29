@@ -75,6 +75,8 @@ def run_debias_generation(
     mtz_f_labels: Optional[str] = None,
     mtz_rfree_label: Optional[str] = None,
     omission_type: Optional[str] = None,
+    use_bulk_and_scaling: Optional[bool] = None,
+    bulk_solvent_k_sol: Optional[float] = None,
     slurm_partition: Optional[str] = None,
     slurm_cpus_per_task: Optional[int] = None,
     slurm_mem_per_cpu: Optional[str] = None,
@@ -115,6 +117,10 @@ def run_debias_generation(
         overrides.append(f"debias.mtz_rfree_label={mtz_rfree_label}")
     if omission_type is not None:
         overrides.append(f"debias.omission_type={omission_type}")
+    if use_bulk_and_scaling is not None:
+        overrides.append(f"debias.use_bulk_and_scaling={use_bulk_and_scaling}")
+    if bulk_solvent_k_sol is not None:
+        overrides.append(f"debias.bulk_solvent_k_sol={bulk_solvent_k_sol}")
 
     if slurm_partition:
         overrides.append(f"slurm.partition={slurm_partition}")
